@@ -3,14 +3,16 @@ const captureButton = document.getElementById('capture');
 const resultDiv = document.getElementById('result');
 
 // Access the camera
-navigator.mediaDevices.getUserMedia({ video: true })
-    .then((stream) => {
-        video.srcObject = stream;
-    })
-    .catch((error) => {
-        console.error('Error accessing the camera:', error);
-        resultDiv.textContent = 'Unable to access the camera. Please check your permissions.';
-    });
+navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { exact: "environment" } } // Use the back camera
+})
+.then((stream) => {
+    video.srcObject = stream;
+})
+.catch((error) => {
+    console.error('Error accessing the camera:', error);
+    resultDiv.textContent = 'Unable to access the camera. Please check your permissions.';
+});
 
 // Capture image from the video feed
 captureButton.addEventListener('click', () => {
