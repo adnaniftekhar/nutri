@@ -4,7 +4,9 @@ const resultDiv = document.getElementById('result');
 
 // Access the camera
 navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { exact: "environment" } } // Use the back camera
+    video: {
+        facingMode: { ideal: "environment" } // Use the back camera if available
+    }
 })
 .then((stream) => {
     video.srcObject = stream;
