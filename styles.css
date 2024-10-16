@@ -1,0 +1,68 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4; /* Light background color */
+    color: #333; /* Dark text color */
+    text-align: center; /* Center text */
+}
+
+header {
+    background-color: #4CAF50; /* Match this with your icon color */
+    color: white;
+    padding: 20px;
+}
+
+#icon {
+    width: 50px; /* Adjust size as needed */
+    height: auto;
+}
+
+main {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items */
+}
+
+video {
+    border: 2px solid #4CAF50; /* Match border color with header */
+    border-radius: 5px; /* Rounded corners */
+}
+
+button {
+    background-color: #4CAF50; /* Match button color with header */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 10px 0;
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049; /* Darker shade on hover */
+}
+
+#result {
+    white-space: pre-wrap;
+    margin-top: 20px;
+    width: 100%; /* Full width for the result */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #4CAF50; /* Header background color */
+    color: white; /* Header text color */
+}
