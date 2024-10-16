@@ -2,19 +2,36 @@ const video = document.getElementById('video');
 const captureButton = document.getElementById('capture');
 const resultDiv = document.getElementById('result');
 
-// Access the camera
-navigator.mediaDevices.getUserMedia({
-    video: {
-        facingMode: { ideal: "environment" } // Use the back camera if available
+// Function to get the back camera stream
+async function startCamera() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+        let backCameraDeviceId = null;
+        videoDevices.forEach(device => {
+            if (device.label.toLowerCase().includes('back')) {
+                backCameraDeviceId = device.deviceId;
+            }
+        });
+
+        const constraints = {
+            video: {
+                deviceId: backCameraDeviceId ? { exact: backCameraDeviceId } : undefined,
+                facingMode: backCameraDeviceId ? undefined : { ideal: "environment" }
+            }
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = stream;
+    } catch (error) {
+        console.error('Error accessing the camera:', error);
+        resultDiv.textContent = 'Unable to access the camera. Please check your permissions.';
     }
-})
-.then((stream) => {
-    video.srcObject = stream;
-})
-.catch((error) => {
-    console.error('Error accessing the camera:', error);
-    resultDiv.textContent = 'Unable to access the camera. Please check your permissions.';
-});
+}
+
+// Start the camera with the back camera if available
+startCamera();
 
 // Capture image from the video feed
 captureButton.addEventListener('click', () => {
@@ -133,75 +150,4 @@ captureButton.addEventListener('click', () => {
             resultDiv.textContent = 'Error analyzing image. Please try again.';
         }
     }, 'image/png', 0.5);
-});
-
-document.getElementById('upload-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const imageInput = document.getElementById('image-input');
-    const resultDiv = document.getElementById('result');
-
-    if (imageInput.files.length === 0) {
-        resultDiv.textContent = 'Please select an image.';
-        return;
-    }
-
-    const file = imageInput.files[0];
-    const img = new Image();
-    const reader = new FileReader();
-
-    reader.onload = (event) => {
-        img.src = event.target.result;
-    };
-
-    reader.readAsDataURL(file);
-
-    img.onload = async () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-
-        // Resize the image to a maximum width/height of 200px
-        const MAX_WIDTH = 200;
-        const MAX_HEIGHT = 200;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-            if (width > MAX_WIDTH) {
-                height *= MAX_WIDTH / width;
-                width = MAX_WIDTH;
-            }
-        } else {
-            if (height > MAX_HEIGHT) {
-                width *= MAX_HEIGHT / height;
-                height = MAX_HEIGHT;
-            }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Convert the canvas to a Blob
-        canvas.toBlob(async (blob) => {
-            const formData = new FormData();
-            formData.append('image', blob, 'resized_image.png');
-
-            try {
-                const response = await fetch('https://nutribackend-35880e8a6669.herokuapp.com/analyze', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error analyzing image');
-                }
-
-                const result = await response.json();
-                resultDiv.textContent = JSON.stringify(result, null, 2);
-            } catch (error) {
-                resultDiv.textContent = 'Error analyzing image. Please try again.';
-            }
-        }, 'image/png');
-    };
 });
