@@ -1,6 +1,9 @@
 const video = document.getElementById('video');
 const captureButton = document.getElementById('capture');
 const resultDiv = document.getElementById('result');
+const tableContainer = document.getElementById('table-container');
+const narrativeContainer = document.getElementById('narrative-container');
+const narrativeDiv = document.getElementById('narrative');
 
 // Function to get the back camera stream
 async function startCamera() {
@@ -79,17 +82,14 @@ captureButton.addEventListener('click', () => {
             const result = await response.json();
             console.log('Response from backend:', result);
 
+            // Clear previous results
+            resultDiv.innerHTML = '';
+
             // Display the captured image
             const imgElement = document.createElement('img');
             imgElement.src = URL.createObjectURL(blob);
             imgElement.alt = 'Captured Image';
-            resultDiv.innerHTML = ''; // Clear previous results
             resultDiv.appendChild(imgElement); // Add captured image
-
-            // Display the analysis message above the table
-            const analysisMessage = document.createElement('p');
-            analysisMessage.textContent = result.choices[0].message.content; // Adjust based on actual response structure
-            resultDiv.appendChild(analysisMessage);
 
             // Format the results in a table
             const table = document.createElement('table');
@@ -144,7 +144,14 @@ captureButton.addEventListener('click', () => {
                 }
             });
 
-            resultDiv.appendChild(table); // Add the table to the result div
+            // Add the table to the result div
+            resultDiv.appendChild(table);
+
+            // Display the analysis message below the table
+            const analysisMessage = document.createElement('p');
+            analysisMessage.textContent = result.choices[0].message.content; // Adjust based on actual response structure
+            resultDiv.appendChild(analysisMessage); // Add analysis message below the table
+
         } catch (error) {
             console.error('Error:', error);
             resultDiv.textContent = 'Error analyzing image. Please try again.';
