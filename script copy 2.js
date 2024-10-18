@@ -52,13 +52,15 @@ editButton.addEventListener('click', () => {
 
 submitEditButton.addEventListener('click', async () => {
     console.log('Submit Edit button clicked');
+
+    // Show loading message during processing
     resultDiv.innerHTML = '<h2>Please wait, processing...</h2>';
 
     const foodItem = foodInput.value;
     console.log('Food item entered:', foodItem);
 
     try {
-        const response = await fetch('https://nutribackend-35880e8a6669.herokuapp.com/edit', {
+        const response = await fetch('http://localhost:5000/edit', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -66,18 +68,23 @@ submitEditButton.addEventListener('click', async () => {
             body: JSON.stringify({ foodItem: foodItem })
         });
 
+        console.log('Response received from backend:', response);
+
         if (!response.ok) {
             throw new Error('Error editing nutritional information');
         }
 
         const result = await response.json();
         console.log('Parsed JSON result:', result);
+
+        // Update display after editing
         updateDisplayAfterEdit(result);
     } catch (error) {
         console.error('Error editing nutritional information:', error);
-        resultDiv.innerHTML = 'Error editing nutritional information. Please try again.';
+        resultDiv.textContent = 'Error editing nutritional information. Please try again.';
     }
 });
+
 
 function captureAndAnalyzeImage() {
     const canvas = document.createElement('canvas');
@@ -86,6 +93,7 @@ function captureAndAnalyzeImage() {
     let width = video.videoWidth;
     let height = video.videoHeight;
 
+    // Calculate the new dimensions while maintaining the aspect ratio
     if (width > height) {
         if (width > MAX_WIDTH) {
             height *= MAX_WIDTH / width;
@@ -102,13 +110,16 @@ function captureAndAnalyzeImage() {
     canvas.height = height;
     canvas.getContext('2d').drawImage(video, 0, 0, width, height);
 
+    // Convert the canvas to a Blob
     canvas.toBlob(async (blob) => {
         const formData = new FormData();
         formData.append('image', blob, 'captured_image.png');
+
+        // Show loading message
         resultDiv.innerHTML = '<h2>Please wait, processing...</h2>';
 
         try {
-            const response = await fetch('https://nutribackend-35880e8a6669.herokuapp.com/analyze', {
+            const response = await fetch('http://127.0.0.1:5000/analyze', {
                 method: 'POST',
                 body: formData
             });
@@ -119,76 +130,84 @@ function captureAndAnalyzeImage() {
 
             const result = await response.json();
             console.log('Response from backend:', result);
+
+            // Display the result
             displayResult(result);
+
+            // Show the edit button
             editButton.style.display = 'block';
+            console.log('Edit button displayed');
+
         } catch (error) {
             console.error('Error:', error);
-            resultDiv.innerHTML = 'Error analyzing image. Please try again.';
+            resultDiv.textContent = 'Error analyzing image. Please try again.';
         }
     }, 'image/png', 0.5);
 }
 
 function displayResult(result) {
-    resultDiv.innerHTML = ''; 
-    if (result && result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content) {
-        const content = result.choices[0].message.content;
+    resultDiv.innerHTML = ''; // Clear loading message
 
-        const [tableContent, narrativeContent] = parseNutritionalInformation(content);
+    if (result && result.choices && result.choices.length > 0) {
+        const messageContent = result.choices[0].message.content;
 
-        if (tableContent) {
-            tableContainer.innerHTML = `<h3>Nutritional Information:</h3>${tableContent}`;
+        // Parse nutritional details from messageContent
+        const nutritionalInfo = parseNutritionalInformation(messageContent);
+
+        if (nutritionalInfo.table) {
+            tableContainer.innerHTML = nutritionalInfo.table;
             tableContainer.style.display = 'block';
             resultDiv.appendChild(tableContainer);
         } else {
+            console.error('Result table is undefined or not properly structured');
             tableContainer.innerHTML = '<p>No nutritional information available.</p>';
             tableContainer.style.display = 'block';
             resultDiv.appendChild(tableContainer);
         }
 
-        if (narrativeContent) {
-            narrativeDiv.innerHTML = `<h3>Narrative:</h3>${narrativeContent}`;
+        if (nutritionalInfo.narrative) {
+            narrativeDiv.textContent = nutritionalInfo.narrative;
             narrativeContainer.style.display = 'block';
             resultDiv.appendChild(narrativeContainer);
         } else {
+            console.error('Result narrative is undefined or not properly structured');
             narrativeDiv.textContent = 'No narrative information available.';
             narrativeContainer.style.display = 'block';
             resultDiv.appendChild(narrativeContainer);
         }
     } else {
-        resultDiv.innerHTML = '<p>No valid analysis information available.</p>';
+        console.error('Backend response is not properly structured');
+        resultDiv.innerHTML = '<p>Error processing the result. Please try again.</p>';
     }
 }
 
 function updateDisplayAfterEdit(result) {
-    console.log('Updating display after edit...');
-    resultDiv.innerHTML = '';
+    if (result && result.choices && result.choices.length > 0) {
+        const messageContent = result.choices[0].message.content;
 
-    if (result && result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content) {
-        const content = result.choices[0].message.content;
+        // Parse nutritional details from messageContent
+        const nutritionalInfo = parseNutritionalInformation(messageContent);
 
-        const [tableContent, narrativeContent] = parseNutritionalInformation(content);
-
-        if (tableContent) {
-            tableContainer.innerHTML = `<h3>Nutritional Information:</h3>${tableContent}`;
+        if (nutritionalInfo.table) {
+            tableContainer.innerHTML = nutritionalInfo.table;
             tableContainer.style.display = 'block';
-            resultDiv.appendChild(tableContainer);
         } else {
+            console.error('Result table is undefined or not properly structured');
             tableContainer.innerHTML = '<p>No nutritional information available.</p>';
             tableContainer.style.display = 'block';
-            resultDiv.appendChild(tableContainer);
         }
 
-        if (narrativeContent) {
-            narrativeDiv.innerHTML = `<h3>Narrative:</h3>${narrativeContent}`;
+        if (nutritionalInfo.narrative) {
+            narrativeDiv.textContent = nutritionalInfo.narrative;
             narrativeContainer.style.display = 'block';
-            resultDiv.appendChild(narrativeContainer);
         } else {
+            console.error('Result narrative is undefined or not properly structured');
             narrativeDiv.textContent = 'No narrative information available.';
             narrativeContainer.style.display = 'block';
-            resultDiv.appendChild(narrativeContainer);
         }
     } else {
-        resultDiv.innerHTML = '<p>No valid analysis information available.</p>';
+        console.error('Backend response is not properly structured');
+        resultDiv.innerHTML = '<p>Error processing the result. Please try again.</p>';
     }
 }
 
@@ -196,9 +215,11 @@ function parseNutritionalInformation(messageContent) {
     let tableHTML = '';
     let narrativeText = '';
 
+    // Split message content by lines
     const lines = messageContent.split('\n');
-    tableHTML += '<table style="width: 100%; border-collapse: collapse;">';
 
+    // Create HTML table for nutritional information
+    tableHTML += '<table style="width: 100%; border-collapse: collapse;">';
     lines.forEach(line => {
         const [name, value] = line.split(':');
         if (name && value) {
@@ -208,16 +229,16 @@ function parseNutritionalInformation(messageContent) {
                     <td style="border: 1px solid #ddd; padding: 8px;">${value.trim()}</td>
                 </tr>`;
         } else {
+            // Treat this line as narrative if it doesn't fit the table structure
             narrativeText += line.trim() + ' ';
         }
     });
-
     tableHTML += '</table>';
 
-    return [
-        tableHTML,
-        narrativeText.trim()
-    ];
+    return {
+        table: tableHTML,
+        narrative: narrativeText.trim()
+    };
 }
 
 function showEditButton() {

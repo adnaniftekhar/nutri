@@ -51,14 +51,13 @@ editButton.addEventListener('click', () => {
 });
 
 submitEditButton.addEventListener('click', async () => {
-    console.log('Submit Edit button clicked');
+    // Show loading message during processing
     resultDiv.innerHTML = '<h2>Please wait, processing...</h2>';
 
     const foodItem = foodInput.value;
-    console.log('Food item entered:', foodItem);
 
     try {
-        const response = await fetch('https://nutribackend-35880e8a6669.herokuapp.com/edit', {
+        const response = await fetch('http://localhost:5000/edit', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -71,11 +70,11 @@ submitEditButton.addEventListener('click', async () => {
         }
 
         const result = await response.json();
-        console.log('Parsed JSON result:', result);
-        updateDisplayAfterEdit(result);
+        // Update display after editing
+        displayResult(result);
     } catch (error) {
         console.error('Error editing nutritional information:', error);
-        resultDiv.innerHTML = 'Error editing nutritional information. Please try again.';
+        resultDiv.textContent = 'Error editing nutritional information. Please try again.';
     }
 });
 
@@ -86,6 +85,7 @@ function captureAndAnalyzeImage() {
     let width = video.videoWidth;
     let height = video.videoHeight;
 
+    // Calculate the new dimensions while maintaining the aspect ratio
     if (width > height) {
         if (width > MAX_WIDTH) {
             height *= MAX_WIDTH / width;
@@ -102,13 +102,16 @@ function captureAndAnalyzeImage() {
     canvas.height = height;
     canvas.getContext('2d').drawImage(video, 0, 0, width, height);
 
+    // Convert the canvas to a Blob
     canvas.toBlob(async (blob) => {
         const formData = new FormData();
         formData.append('image', blob, 'captured_image.png');
+
+        // Show loading message
         resultDiv.innerHTML = '<h2>Please wait, processing...</h2>';
 
         try {
-            const response = await fetch('https://nutribackend-35880e8a6669.herokuapp.com/analyze', {
+            const response = await fetch('http://127.0.0.1:5000/analyze', {
                 method: 'POST',
                 body: formData
             });
@@ -119,86 +122,93 @@ function captureAndAnalyzeImage() {
 
             const result = await response.json();
             console.log('Response from backend:', result);
+
+            // Display the result
             displayResult(result);
+
+            // Show the edit button
             editButton.style.display = 'block';
+            console.log('Edit button displayed');
+
         } catch (error) {
             console.error('Error:', error);
-            resultDiv.innerHTML = 'Error analyzing image. Please try again.';
+            resultDiv.textContent = 'Error analyzing image. Please try again.';
         }
     }, 'image/png', 0.5);
 }
 
 function displayResult(result) {
-    resultDiv.innerHTML = ''; 
-    if (result && result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content) {
+    // Assuming result contains a table and narrative
+    resultDiv.innerHTML = ''; // Clear loading message
+    if (result && result.choices && result.choices[0] && result.choices[0].message && result.choices[0].message.content) {
         const content = result.choices[0].message.content;
 
-        const [tableContent, narrativeContent] = parseNutritionalInformation(content);
+        // Extract table and narrative from content
+        const [tableContent, narrativeContent] = content.split('\n\n');
 
         if (tableContent) {
-            tableContainer.innerHTML = `<h3>Nutritional Information:</h3>${tableContent}`;
+            tableContainer.innerHTML = `<p><strong>Nutritional Information:</strong></p>${tableContent}`;
             tableContainer.style.display = 'block';
             resultDiv.appendChild(tableContainer);
         } else {
+            console.error('Result table is undefined or not properly structured');
             tableContainer.innerHTML = '<p>No nutritional information available.</p>';
             tableContainer.style.display = 'block';
             resultDiv.appendChild(tableContainer);
         }
 
         if (narrativeContent) {
-            narrativeDiv.innerHTML = `<h3>Narrative:</h3>${narrativeContent}`;
+            narrativeDiv.innerHTML = `<p><strong>Narrative:</strong></p>${narrativeContent}`;
             narrativeContainer.style.display = 'block';
             resultDiv.appendChild(narrativeContainer);
         } else {
+            console.error('Result narrative is undefined or not properly structured');
             narrativeDiv.textContent = 'No narrative information available.';
             narrativeContainer.style.display = 'block';
             resultDiv.appendChild(narrativeContainer);
         }
     } else {
+        console.error('Result is undefined or not properly structured');
         resultDiv.innerHTML = '<p>No valid analysis information available.</p>';
     }
 }
+
 
 function updateDisplayAfterEdit(result) {
-    console.log('Updating display after edit...');
-    resultDiv.innerHTML = '';
-
-    if (result && result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content) {
+    // Clear previous result and show updated information
+    if (result && result.choices && result.choices[0] && result.choices[0].message && result.choices[0].message.content) {
         const content = result.choices[0].message.content;
 
-        const [tableContent, narrativeContent] = parseNutritionalInformation(content);
-
+        // Extract table and narrative from content
+        const [tableContent, ...narrativeParts] = content.split('\n\n');
+        const narrativeContent = narrativeParts.join('\n\n');
+        
         if (tableContent) {
-            tableContainer.innerHTML = `<h3>Nutritional Information:</h3>${tableContent}`;
+            tableContainer.innerHTML = parseTableContent(tableContent);
             tableContainer.style.display = 'block';
-            resultDiv.appendChild(tableContainer);
         } else {
+            console.error('Result table is undefined or not properly structured');
             tableContainer.innerHTML = '<p>No nutritional information available.</p>';
             tableContainer.style.display = 'block';
-            resultDiv.appendChild(tableContainer);
         }
 
         if (narrativeContent) {
-            narrativeDiv.innerHTML = `<h3>Narrative:</h3>${narrativeContent}`;
+            narrativeDiv.textContent = narrativeContent;
             narrativeContainer.style.display = 'block';
-            resultDiv.appendChild(narrativeContainer);
         } else {
+            console.error('Result narrative is undefined or not properly structured');
             narrativeDiv.textContent = 'No narrative information available.';
             narrativeContainer.style.display = 'block';
-            resultDiv.appendChild(narrativeContainer);
         }
     } else {
+        console.error('Result is undefined or not properly structured');
         resultDiv.innerHTML = '<p>No valid analysis information available.</p>';
     }
 }
 
-function parseNutritionalInformation(messageContent) {
-    let tableHTML = '';
-    let narrativeText = '';
-
-    const lines = messageContent.split('\n');
-    tableHTML += '<table style="width: 100%; border-collapse: collapse;">';
-
+function parseTableContent(content) {
+    let tableHTML = '<table style="width: 100%; border-collapse: collapse;">';
+    const lines = content.split('\n');
     lines.forEach(line => {
         const [name, value] = line.split(':');
         if (name && value) {
@@ -207,17 +217,10 @@ function parseNutritionalInformation(messageContent) {
                     <td style="border: 1px solid #ddd; padding: 8px;">${name.trim()}</td>
                     <td style="border: 1px solid #ddd; padding: 8px;">${value.trim()}</td>
                 </tr>`;
-        } else {
-            narrativeText += line.trim() + ' ';
         }
     });
-
     tableHTML += '</table>';
-
-    return [
-        tableHTML,
-        narrativeText.trim()
-    ];
+    return tableHTML;
 }
 
 function showEditButton() {

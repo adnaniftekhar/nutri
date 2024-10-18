@@ -15,7 +15,18 @@
         <video id="video" width="400" height="300" autoplay></video>
         <button id="capture">Capture Image</button>
         <canvas id="canvas" style="display:none;"></canvas>
-        <div id="result"></div>
+        <div id="result">
+            <div id="table-container" style="display: none;"></div>
+            <div id="narrative-container" style="display: none;">
+                <div id="narrative"></div>
+            </div>
+        </div>
+        <button id="edit-button" style="display: none;">Edit Nutritional Info</button>
+        <div id="edit-section" style="display: none;">
+            <h2>Edit Nutritional Information</h2>
+            <input type="text" id="food-input" placeholder="Enter food items" required>
+            <button id="submit-edit">Submit</button>
+        </div>
     </main>
     <script src="script.js"></script>
 </body>
