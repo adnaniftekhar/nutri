@@ -98,8 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function captureAndAnalyzeImage() {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 280; // Set a maximum width
-        const MAX_HEIGHT = 280; // Set a maximum height
+        const MAX_WIDTH = 220; // Set a maximum width
+        const MAX_HEIGHT = 220; // Set a maximum height
         let width = video.videoWidth;
         let height = video.videoHeight;
 
