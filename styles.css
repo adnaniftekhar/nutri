@@ -1,53 +1,121 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4; /* Light background color */
-    color: #333; /* Dark text color */
-    text-align: center; /* Center text */
+    background-color: #f8f8f8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 header {
-    background-color: #4CAF50; /* Match this with your icon color */
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #4CAF50;
     color: white;
-    padding: 20px;
+    width: 100%;
+    position: relative; /* Ensure the header is positioned relative for absolute children */
+}
+
+.hamburger {
+    cursor: pointer;
+    font-size: 24px;
+    margin-right: 10px;
+    position: absolute;
+    left: 10px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+nav {
+    position: absolute; /* Change to absolute to position it correctly */
+    top: 65px; /* Adjust based on header height */
+    left: 10px; /* Align to the left */
+}
+
+#menu {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    background-color: #4CAF50; /* Match header background */
+    width: 200px; /* Fixed width for the menu */
+    border: 1px solid #ddd;
+    display: none; /* Hide by default */
+    z-index: 1000; /* Ensure it appears above other elements */
+}
+
+#menu.hidden {
+    display: none; /* Hide when the 'hidden' class is applied */
+}
+
+#menu:not(.hidden) {
+    display: flex; /* Show when not hidden */
+}
+
+#menu li {
+    margin: 10px 0;
+}
+
+#menu a {
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    display: block;
+}
+
+#menu a:hover {
+    background-color: #45a049;
+}
+
+@media (max-width: 768px) {
+    #menu {
+        width: 100%;
+    }
 }
 
 #icon {
-    width: 50px; /* Adjust size as needed */
+    width: 50px;
     height: auto;
 }
 
 main {
-    padding: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Center items */
+    align-items: center;
+    width: 100%;
+}
+
+#video {
+    margin-bottom: 20px;
 }
 
 video {
-    border: 2px solid #4CAF50; /* Match border color with header */
-    border-radius: 5px; /* Rounded corners */
+    border: 2px solid #4CAF50;
+    border-radius: 5px;
 }
 
 button {
-    background-color: #4CAF50; /* Match button color with header */
+    background-color: #4CAF50;
     color: white;
     border: none;
     padding: 10px 20px;
     margin: 10px 0;
-    border-radius: 5px; /* Rounded corners */
+    border-radius: 5px;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #45a049; /* Darker shade on hover */
+    background-color: #45a049;
 }
 
 #result {
-    white-space: pre-wrap;
-    margin-top: 20px;
-    width: 100%; /* Full width for the result */
+    text-align: center;
 }
 
 table {
@@ -63,6 +131,14 @@ th, td {
 }
 
 th {
-    background-color: #4CAF50; /* Header background color */
-    color: white; /* Header text color */
+    background-color: #4CAF50;
+    color: white;
+}
+
+#table-container {
+    margin-top: 20px;
+}
+
+.hidden {
+    display: none;
 }

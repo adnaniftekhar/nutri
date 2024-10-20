@@ -3,13 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>nutri: a food nutrition analysis helper</title>
+    <title>nutri: food analysis, simplified</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <img src="nutri_icon.png" alt="Nutri Icon" id="icon">
-        <h1>nutri: a food nutrition analysis helper</h1>
+        <div class="header-content">
+            <div id="hamburger" class="hamburger">&#9776;</div>
+            <img src="nutri_icon.png" alt="Nutri Icon" id="icon">
+            <h1>nutri: food analysis, simplified</h1>
+        </div>
+        <nav>
+            <ul id="menu" class="hidden">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
     </header>
     <main>
         <video id="video" width="400" height="300" autoplay></video>
@@ -21,11 +31,11 @@
                 <div id="narrative"></div>
             </div>
         </div>
-        <button id="edit-button" style="display: none;">Edit Nutritional Info</button>
+        <button id="edit-button" style="display: none;">Edit</button>
         <div id="edit-section" style="display: none;">
             <h2>Edit Nutritional Information</h2>
-            <input type="text" id="food-input" placeholder="Enter food items" required>
-            <button id="submit-edit">Submit</button>
+            <input type="text" id="food-input" placeholder="Enter food item" required>
+            <button id="submit-edit">Submit Edit</button>
         </div>
     </main>
     <script src="script.js"></script>
