@@ -11,11 +11,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitEditButton = document.getElementById('submit-edit');
     const hamburger = document.getElementById('hamburger');
     const menu = document.getElementById('menu');
+    const googleLoginButton = document.querySelector('.google-login-button');
 
     // JavaScript to toggle the menu
-    hamburger.addEventListener('click', () => {
-        menu.classList.toggle('hidden'); // Toggle the 'hidden' class
-    });
+    if (hamburger && menu) {
+        hamburger.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+    } else {
+        console.error("Essential elements not found on the page");
+    }
+
+    // Google login handler
+    if (googleLoginButton) {
+        googleLoginButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            console.log('Redirecting to Google login...');
+            window.location.href = googleLoginButton.href;
+        });
+    }
 
     // Only run camera-related code if the video element exists
     if (video) {
@@ -98,8 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function captureAndAnalyzeImage() {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 195; // Set a maximum width
-        const MAX_HEIGHT = 195; // Set a maximum height
+        const MAX_WIDTH = 180; // Set a maximum width
+        const MAX_HEIGHT = 180; // Set a maximum height
         let width = video.videoWidth;
         let height = video.videoHeight;
 
@@ -241,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tableHTML += '<table style="width: 100%; border-collapse: collapse;">';
 
         lines.forEach(line => {
-            const [name, value] = line.split(':');
+            const [name, value] = line.includes('|') ? line.split('|') : line.split(':');
             if (name && value) {
                 tableHTML += `
                     <tr>

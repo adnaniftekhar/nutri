@@ -1,43 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>nutri: food analysis, simplified</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nutri: food analysis, simplified</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .icon-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: calc(100vh - 60px);
+    }
+    .icon {
+      width: 240px;
+      height: 240px;
+      margin: 0 20px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <div id="hamburger" class="hamburger">&#9776;</div>
-            <img src="nutri_icon.png" alt="Nutri Icon" id="icon">
-            <h1>nutri: food analysis, simplified</h1>
-        </div>
-        <nav>
-            <ul id="menu" class="hidden">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About</a></li>
-                <li><a href="login.html">Login</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <video id="video" width="400" height="300" autoplay></video>
-        <button id="capture">Capture Image</button>
-        <canvas id="canvas" style="display:none;"></canvas>
-        <div id="result">
-            <div id="table-container" style="display: none;"></div>
-            <div id="narrative-container" style="display: none;">
-                <div id="narrative"></div>
-            </div>
-        </div>
-        <button id="edit-button" style="display: none;">Edit</button>
-        <div id="edit-section" style="display: none;">
-            <h2>Edit Nutritional Information</h2>
-            <input type="text" id="food-input" placeholder="Enter food item" required>
-            <button id="submit-edit">Submit Edit</button>
-        </div>
-    </main>
-    <script src="script.js"></script>
+  <header>
+    <div class="header-content">
+      <div id="hamburger" class="hamburger">&#9776;</div>
+      <img src="nutri_icon.png" alt="Nutri Icon" id="icon">
+      <h1 style="margin-left: 5px;">nutri</h1> <!-- Added margin-left for spacing -->
+    </div>
+    <nav>
+      <ul id="menu" class="hidden">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="camera.html">Camera Input</a></li>
+        <li><a href="text.html">Text Input</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="saved.html">Saved Entries</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <div class="icon-container">
+      <img src="text.png" alt="Text Icon" class="icon" onclick="location.href='text.html'">
+      <img src="camera.png" alt="Camera Icon" class="icon" onclick="location.href='camera.html'">
+    </div>
+  </main>
+  <script src="script.js"></script>
 </body>
 </html>

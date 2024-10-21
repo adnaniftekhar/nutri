@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - nutri: food analysis, simplified</title>
+    <title>nutri: food analysis, simplified</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
         <div class="header-content">
             <div id="hamburger" class="hamburger">&#9776;</div>
             <img src="nutri_icon.png" alt="Nutri Icon" id="icon">
-            <h1 style="margin-left: 5px;">nutri</h1>
+            <h1>nutri: food analysis, simplified</h1>
         </div>
         <nav>
             <ul id="menu" class="hidden">
@@ -25,8 +25,21 @@
         </nav>
     </header>
     <main>
-        <h2>Login with Google (currently not working)</h2>
-        <a href="{{ url_for('login') }}" class="google-login-button">Login with Google</a>
+        <video id="video" width="400" height="300" autoplay></video>
+        <button id="capture">Capture Image</button>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <div id="result">
+            <div id="table-container" style="display: none;"></div>
+            <div id="narrative-container" style="display: none;">
+                <div id="narrative"></div>
+            </div>
+        </div>
+        <button id="edit-button" style="display: none;">Edit</button>
+        <div id="edit-section" style="display: none;">
+            <h2>Edit Nutritional Information</h2>
+            <input type="text" id="food-input" placeholder="Enter food item" required>
+            <button id="submit-edit">Submit Edit</button>
+        </div>
     </main>
     <script src="script.js"></script>
 </body>

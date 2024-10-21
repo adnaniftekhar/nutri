@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - nutri: food analysis, simplified</title>
+    <title>Profile - nutri</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -19,15 +19,14 @@
                 <li><a href="about.html">About</a></li>
                 <li><a href="camera.html">Camera Input</a></li>
                 <li><a href="text.html">Text Input</a></li>
-                <li><a href="login.html">Login</a></li>
                 <li><a href="saved.html">Saved Entries</a></li>
             </ul>
         </nav>
     </header>
     <main>
-        <h2>Login with Google (currently not working)</h2>
-        <a href="{{ url_for('login') }}" class="google-login-button">Login with Google</a>
+        <h2>Welcome, {{ user['displayName'] }}</h2>
+        <p>Email: {{ user['emails'][0]['value'] }}</p>
+        <a href="{{ url_for('logout') }}">Logout</a>
     </main>
-    <script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Saved Nutritional Entries</title>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div id="hamburger" class="hamburger">&#9776;</div>
+            <img src="nutri_icon.png" alt="Nutri Icon" id="icon">
+            <h1 style="margin-left: 5px;">nutri</h1>
+        </div>
+        <nav>
+            <ul id="menu" class="hidden">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="camera.html">Camera Input</a></li>
+                <li><a href="text.html">Text Input</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="saved.html">Saved Entries</a></li>
+            </ul>
+        </nav>
+    </header>
+    <h1>Saved Nutritional Entries</h1>
+    <div id="entries-container" class="result-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Saved entries page loaded");
+
+            // Toggle the hamburger menu
+            const hamburgerMenu = document.getElementById('hamburger');
+            const menu = document.getElementById('menu');
+
+            if (hamburgerMenu && menu) {
+                hamburgerMenu.addEventListener('click', () => {
+                    menu.classList.toggle('hidden');
+                });
+            }
+
+            const entriesContainer = document.getElementById("entries-container");
+            let entries = JSON.parse(localStorage.getItem("nutritionalEntries")) || [];
+
+            if (entries.length === 0) {
+                entriesContainer.innerHTML = '<p>No entries found.</p>';
+            } else {
+                entries.forEach((entry, index) => {
+                    // Create entry summary container
+                    const entryDiv = document.createElement('div');
+                    entryDiv.classList.add("entry-summary");
+
+                    // Add summary text and button
+                    entryDiv.innerHTML = `
+                        <h3>Nutritional Analysis for ${entry.foodItem} (${new Date(entry.dateTime).toLocaleString()})</h3>
+                        <button class="expand-button" data-index="${index}">+</button>
+                        <div class="entry-details" style="display: none;">
+                            ${entry.tableHTML}
+                        </div>
+                    `;
+
+                    entriesContainer.appendChild(entryDiv);
+                });
+
+                // Add event listeners for expand buttons
+                const expandButtons = document.querySelectorAll(".expand-button");
+                expandButtons.forEach(button => {
+                    button.addEventListener("click", () => {
+                        const index = button.getAttribute("data-index");
+                        const detailsDiv = button.parentElement.querySelector(".entry-details");
+
+                        if (detailsDiv.style.display === "none") {
+                            detailsDiv.style.display = "block";
+                            button.innerText = "-";
+                        } else {
+                            detailsDiv.style.display = "none";
+                            button.innerText = "+";
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+/* General Styling */
 body {
     font-family: Arial, sans-serif;
     background-color: #f8f8f8;
@@ -6,6 +7,7 @@ body {
     align-items: center;
 }
 
+/* Header and Hamburger Menu Styling */
 header {
     display: flex;
     align-items: center;
@@ -13,7 +15,7 @@ header {
     background-color: #4CAF50;
     color: white;
     width: 100%;
-    position: relative; /* Ensure the header is positioned relative for absolute children */
+    position: relative;
 }
 
 .hamburger {
@@ -32,9 +34,9 @@ header {
 }
 
 nav {
-    position: absolute; /* Change to absolute to position it correctly */
-    top: 65px; /* Adjust based on header height */
-    left: 10px; /* Align to the left */
+    position: absolute;
+    top: 65px;
+    left: 10px;
 }
 
 #menu {
@@ -42,20 +44,20 @@ nav {
     padding: 0;
     margin: 0;
     display: flex;
-    flex-direction: column; /* Stack items vertically */
-    background-color: #4CAF50; /* Match header background */
-    width: 200px; /* Fixed width for the menu */
+    flex-direction: column;
+    background-color: #4CAF50;
+    width: 200px;
     border: 1px solid #ddd;
-    display: none; /* Hide by default */
-    z-index: 1000; /* Ensure it appears above other elements */
+    display: none;
+    z-index: 1000;
 }
 
 #menu.hidden {
-    display: none; /* Hide when the 'hidden' class is applied */
+    display: none;
 }
 
 #menu:not(.hidden) {
-    display: flex; /* Show when not hidden */
+    display: flex;
 }
 
 #menu li {
@@ -79,27 +81,65 @@ nav {
     }
 }
 
-#icon {
-    width: 50px;
-    height: auto;
-}
-
-main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* Table Styling */
+#table-container {
+    margin-top: 20px;
+    overflow-x: auto;
     width: 100%;
 }
 
-#video {
-    margin-bottom: 20px;
+
+table {
+    width: 90%; /* Set all tables to have consistent width */
+    max-width: 90%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    overflow-x: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-video {
-    border: 2px solid #4CAF50;
-    border-radius: 5px;
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px 8px;
+    text-align: left;
+    background-color: #ffffff;
 }
 
+thead {
+    background-color: #4CAF50;
+    color: black; /* Change header text color to black for visibility */
+}
+
+/* Set column widths to maintain consistency */
+td:nth-child(1) {
+    width: 75%;
+    max-width: 75%;
+}
+
+td:nth-child(2) {
+    width: 25%;
+    max-width: 25%;
+    text-align: right;
+}
+
+/* Responsive Table Styling */
+@media only screen and (max-width: 600px) {
+    table {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 10px 5px;
+    }
+
+    /* Allow scrolling for wide tables on small devices */
+    #table-container {
+        overflow-x: auto;
+    }
+}
+
+/* Button Styling */
 button {
     background-color: #4CAF50;
     color: white;
@@ -114,29 +154,32 @@ button:hover {
     background-color: #45a049;
 }
 
+/* Icon Styling */
+#icon {
+    width: 50px;
+    height: auto;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* Result Container Styling */
 #result {
     text-align: center;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+/* Video Styling */
+#video {
+    margin-bottom: 20px;
 }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-th {
-    background-color: #4CAF50;
-    color: white;
-}
-
-#table-container {
-    margin-top: 20px;
+video {
+    border: 2px solid #4CAF50;
+    border-radius: 5px;
 }
 
 .hidden {
