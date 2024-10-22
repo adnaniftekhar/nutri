@@ -32,17 +32,19 @@
         <video id="video" width="400" height="300" playsinline autoplay muted></video>
         <button id="capture">Capture Image</button>
         <canvas id="canvas" style="display:none;"></canvas>
-        <div id="result">
+
+        <div id="result" style="display: none;">
+            <h3>Analysis Result</h3>
             <div id="table-container" style="display: none;"></div>
             <div id="narrative-container" style="display: none;">
                 <div id="narrative"></div>
             </div>
         </div>
-        <button id="edit-button" style="display: none;">Edit</button>
-        <div id="edit-section" style="display: none;">
-            <h2>Edit Nutritional Information</h2>
-            <input type="text" id="food-input" placeholder="Enter food item" required>
-            <button id="submit-edit">Submit Edit</button>
+        
+
+        <div id="controls">
+            <button id="save-button" style="display: none;">Save Analysis</button>
+            <a href="saved.html" id="view-saved-button" style="display: none;">View Saved Entries</a>
         </div>
     </main>
     <script src="script.js"></script>

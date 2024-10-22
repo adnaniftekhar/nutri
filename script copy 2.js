@@ -1,17 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('video');
+    const startCameraButton = document.getElementById('start-camera');
     const captureButton = document.getElementById('capture');
     const resultDiv = document.getElementById('result');
     const tableContainer = document.getElementById('table-container');
     const narrativeContainer = document.getElementById('narrative-container');
     const narrativeDiv = document.getElementById('narrative');
-    const editButton = document.getElementById('edit-button');
-    const editSection = document.getElementById('edit-section');
-    const foodInput = document.getElementById('food-input');
-    const submitEditButton = document.getElementById('submit-edit');
     const hamburger = document.getElementById('hamburger');
     const menu = document.getElementById('menu');
     const googleLoginButton = document.querySelector('.google-login-button');
+    const saveButton = document.getElementById('save-button');
 
     // JavaScript to toggle the menu
     if (hamburger && menu) {
@@ -31,36 +29,47 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Only run camera-related code if the video element exists
+    // Function to detect iOS devices
+    function isIOS() {
+        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    let capturedImageData; // Variable to store the captured image data
+    let currentAnalysis = null; // Variable to store the current analysis
+
     if (video) {
-        // Function to get the back camera stream with iOS-specific constraints
+        // Function to get the back camera stream with adjusted constraints
         async function startCamera() {
             try {
-                // Define constraints to select the back camera with ideal facingMode for better compatibility
-                const constraints = {
-                    video: {
-                        facingMode: { ideal: 'environment' }, // Use `ideal` for better iOS compatibility
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                };
+                let constraints;
+                if (isIOS()) {
+                    constraints = {
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        },
+                        audio: false
+                    };
+                } else {
+                    constraints = {
+                        video: {
+                            facingMode: { ideal: 'environment' },
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        },
+                        audio: false
+                    };
+                }
 
-                // Request the camera stream with updated constraints
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
 
-                // Force video to play after metadata has loaded
-                video.addEventListener('loadedmetadata', () => {
-                    video.play().catch(error => console.error('Error starting video playback:', error));
-                });
+                // Set playsinline and muted attributes
+                video.setAttribute('playsinline', true);
+                video.muted = true;
 
-                // Fix for iOS: Reload page if stream ends
-                stream.getTracks().forEach(track => {
-                    track.addEventListener('ended', () => {
-                        console.log("Stream ended. Re-initializing camera...");
-                        startCamera();
-                    });
-                });
+                await video.play();
 
                 console.log("Camera stream started successfully.");
             } catch (error) {
@@ -68,36 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (resultDiv) {
                     resultDiv.textContent = 'Unable to access the camera. Please check your permissions and ensure you are using a secure (HTTPS) connection.';
                 }
-
-                // Fallback for iOS devices if initial constraints fail
-                if (error.name === 'OverconstrainedError' || error.name === 'NotFoundError') {
-                    try {
-                        console.log('Attempting fallback constraints for iOS compatibility...');
-                        const fallbackConstraints = {
-                            video: {
-                                facingMode: 'user', // Switch to front camera if back camera fails
-                                width: { ideal: 640 },
-                                height: { ideal: 480 }
-                            }
-                        };
-                        const stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
-                        video.srcObject = stream;
-
-                        video.addEventListener('loadedmetadata', () => {
-                            video.play().catch(fallbackError => console.error('Error starting fallback video playback:', fallbackError));
-                        });
-                    } catch (fallbackError) {
-                        console.error('Fallback error accessing the camera:', fallbackError);
-                        if (resultDiv) {
-                            resultDiv.textContent = 'Unable to access the camera even with fallback settings. Please try again.';
-                        }
-                    }
-                }
             }
         }
 
-        // Start the camera with the back camera if available
-        startCamera();
+        // Check if iOS device
+        if (isIOS()) {
+            // Show the Start Camera button on iOS devices
+            startCameraButton.style.display = 'block';
+
+            startCameraButton.addEventListener('click', () => {
+                startCamera();
+                startCameraButton.style.display = 'none';
+            });
+        } else {
+            // Start the camera automatically on other devices
+            startCamera();
+        }
 
         // Capture image from the video feed
         captureButton.addEventListener('click', () => {
@@ -105,52 +100,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (editButton) {
-        editButton.addEventListener('click', () => {
-            editSection.style.display = 'block';
-            console.log('Edit section displayed');
-        });
-    }
-
-    submitEditButton.addEventListener('click', async () => {
-        console.log('Submit Edit button clicked');
-        resultDiv.innerHTML = '<h2>Please wait, processing...</h2>';
-
-        const foodItem = foodInput.value;
-        console.log('Food item entered:', foodItem);
-
-        try {
-            const response = await fetch('https://nutribackend-35880e8a6669.herokuapp.com/edit', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ foodItem: foodItem })
-            });
-
-            if (!response.ok) {
-                throw new Error('Error editing nutritional information');
-            }
-
-            const result = await response.json();
-            console.log('Parsed JSON result:', result);
-            updateDisplayAfterEdit(result);
-        } catch (error) {
-            console.error('Error editing nutritional information:', error);
-            resultDiv.innerHTML = 'Error editing nutritional information. Please try again.';
+    // Add the event listener for the Save Analysis button
+    saveButton.addEventListener('click', () => {
+        if (currentAnalysis) {
+            console.log('Saving entry to local storage');
+            let entries = JSON.parse(localStorage.getItem('nutritionalEntries')) || [];
+            entries.push(currentAnalysis);
+            localStorage.setItem('nutritionalEntries', JSON.stringify(entries));
+            console.log('Entry saved:', currentAnalysis);
+        } else {
+            console.error('No current analysis to save');
         }
     });
 
-    let capturedImageData; // Variable to store the captured image data
-
     function captureAndAnalyzeImage() {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = video.videoWidth; // Adapt to video width dynamically
-        const MAX_HEIGHT = video.videoHeight; // Adapt to video height dynamically
+        const MAX_WIDTH = 180; // Set a maximum width
+        const MAX_HEIGHT = 180; // Set a maximum height
         let width = video.videoWidth;
         let height = video.videoHeight;
 
-        // Maintain aspect ratio for mobile devices
         if (width > height) {
             if (width > MAX_WIDTH) {
                 height *= MAX_WIDTH / width;
@@ -188,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 console.log('Response from backend:', result);
                 displayResult(result, canvas); // Pass the canvas to displayResult
-                editButton.style.display = 'block';
             } catch (error) {
                 console.error('Error:', error);
                 resultDiv.innerHTML = 'Error analyzing image. Please try again.';
@@ -197,13 +165,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayResult(result, canvas) {
-        resultDiv.innerHTML = ''; 
+        resultDiv.innerHTML = '';
 
         // Create an image element to display the captured image
         const imgElement = document.createElement('img');
-        imgElement.src = canvas.toDataURL(); // Assuming you have access to the canvas
+        imgElement.src = canvas.toDataURL();
         imgElement.alt = 'Captured Image';
-        imgElement.style.maxWidth = '100%'; // Make sure the image is responsive
+        imgElement.style.maxWidth = '100%';
         imgElement.style.height = 'auto';
 
         // Append the image to the resultDiv
@@ -233,49 +201,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 narrativeContainer.style.display = 'block';
                 resultDiv.appendChild(narrativeContainer);
             }
-        } else {
-            resultDiv.innerHTML = '<p>No valid analysis information available.</p>';
-        }
-    }
 
-    function updateDisplayAfterEdit(result) {
-        console.log('Updating display after edit...');
-        resultDiv.innerHTML = '';
+            // Save current analysis to a variable for saving
+            currentAnalysis = {
+                imageData: capturedImageData,
+                tableContent,
+                narrativeContent,
+                dateTime: new Date().toISOString()
+            };
 
-        // Display the captured image
-        if (capturedImageData) {
-            const imgElement = document.createElement('img');
-            imgElement.src = capturedImageData; // Use the stored image data
-            imgElement.alt = 'Captured Image';
-            imgElement.style.maxWidth = '100%'; // Make sure the image is responsive
-            imgElement.style.height = 'auto';
-            resultDiv.appendChild(imgElement); // Append the image to the resultDiv
-        }
-
-        if (result && result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content) {
-            const content = result.choices[0].message.content;
-
-            const [tableContent, narrativeContent] = parseNutritionalInformation(content);
-
-            if (tableContent) {
-                tableContainer.innerHTML = `<h3>Nutritional Information:</h3>${tableContent}`;
-                tableContainer.style.display = 'block';
-                resultDiv.appendChild(tableContainer);
-            } else {
-                tableContainer.innerHTML = '<p>No nutritional information available.</p>';
-                tableContainer.style.display = 'block';
-                resultDiv.appendChild(tableContainer);
-            }
-
-            if (narrativeContent) {
-                narrativeDiv.innerHTML = `<h3>Narrative:</h3>${narrativeContent}`;
-                narrativeContainer.style.display = 'block';
-                resultDiv.appendChild(narrativeContainer);
-            } else {
-                narrativeDiv.textContent = 'No narrative information available.';
-                narrativeContainer.style.display = 'block';
-                resultDiv.appendChild(narrativeContainer);
-            }
+            // Display save button as analysis is ready to be saved
+            saveButton.style.display = 'inline-block';
         } else {
             resultDiv.innerHTML = '<p>No valid analysis information available.</p>';
         }

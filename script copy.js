@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('video');
+    const startCameraButton = document.getElementById('start-camera');
     const captureButton = document.getElementById('capture');
     const resultDiv = document.getElementById('result');
     const tableContainer = document.getElementById('table-container');
@@ -31,40 +32,69 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Only run camera-related code if the video element exists
+    // Function to detect iOS devices
+    function isIOS() {
+        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    let capturedImageData; // Variable to store the captured image data
+
     if (video) {
-        // Function to get the back camera stream
+        // Function to get the back camera stream with adjusted constraints
         async function startCamera() {
             try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-
-                let backCameraDeviceId = null;
-                videoDevices.forEach(device => {
-                    if (device.label.toLowerCase().includes('back')) {
-                        backCameraDeviceId = device.deviceId;
-                    }
-                });
-
-                const constraints = {
-                    video: {
-                        deviceId: backCameraDeviceId ? { exact: backCameraDeviceId } : undefined,
-                        facingMode: backCameraDeviceId ? undefined : { ideal: "environment" }
-                    }
-                };
+                let constraints;
+                if (isIOS()) {
+                    constraints = {
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        },
+                        audio: false
+                    };
+                } else {
+                    constraints = {
+                        video: {
+                            facingMode: { ideal: 'environment' },
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        },
+                        audio: false
+                    };
+                }
 
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
+
+                // Set playsinline and muted attributes
+                video.setAttribute('playsinline', true);
+                video.muted = true;
+
+                await video.play();
+
+                console.log("Camera stream started successfully.");
             } catch (error) {
                 console.error('Error accessing the camera:', error);
                 if (resultDiv) {
-                    resultDiv.textContent = 'Unable to access the camera. Please check your permissions.';
+                    resultDiv.textContent = 'Unable to access the camera. Please check your permissions and ensure you are using a secure (HTTPS) connection.';
                 }
             }
         }
 
-        // Start the camera with the back camera if available
-        startCamera();
+        // Check if iOS device
+        if (isIOS()) {
+            // Show the Start Camera button on iOS devices
+            startCameraButton.style.display = 'block';
+
+            startCameraButton.addEventListener('click', () => {
+                startCamera();
+                startCameraButton.style.display = 'none';
+            });
+        } else {
+            // Start the camera automatically on other devices
+            startCamera();
+        }
 
         // Capture image from the video feed
         captureButton.addEventListener('click', () => {
@@ -107,8 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
             resultDiv.innerHTML = 'Error editing nutritional information. Please try again.';
         }
     });
-
-    let capturedImageData; // Variable to store the captured image data
 
     function captureAndAnalyzeImage() {
         const canvas = document.createElement('canvas');
@@ -154,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 console.log('Response from backend:', result);
                 displayResult(result, canvas); // Pass the canvas to displayResult
-                editButton.style.display = 'block';
+                showEditButton();
             } catch (error) {
                 console.error('Error:', error);
                 resultDiv.innerHTML = 'Error analyzing image. Please try again.';
@@ -163,13 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayResult(result, canvas) {
-        resultDiv.innerHTML = ''; 
+        resultDiv.innerHTML = '';
 
         // Create an image element to display the captured image
         const imgElement = document.createElement('img');
-        imgElement.src = canvas.toDataURL(); // Assuming you have access to the canvas
+        imgElement.src = canvas.toDataURL();
         imgElement.alt = 'Captured Image';
-        imgElement.style.maxWidth = '100%'; // Make sure the image is responsive
+        imgElement.style.maxWidth = '100%';
         imgElement.style.height = 'auto';
 
         // Append the image to the resultDiv
@@ -213,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const imgElement = document.createElement('img');
             imgElement.src = capturedImageData; // Use the stored image data
             imgElement.alt = 'Captured Image';
-            imgElement.style.maxWidth = '100%'; // Make sure the image is responsive
+            imgElement.style.maxWidth = '100%';
             imgElement.style.height = 'auto';
             resultDiv.appendChild(imgElement); // Append the image to the resultDiv
         }
@@ -269,13 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tableHTML += '</table>';
 
-        return [
-            tableHTML,
-            narrativeText.trim()
-        ];
-    }
-
-    function showEditButton() {
-        editButton.style.display = 'block';
+        return [tableHTML, narrativeText.trim()];
     }
 });
