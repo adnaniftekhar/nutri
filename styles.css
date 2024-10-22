@@ -5,6 +5,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    text-align: left;
 }
 
 /* Header and Hamburger Menu Styling */
@@ -88,9 +89,8 @@ nav {
     width: 100%;
 }
 
-
 table {
-    width: 90%; /* Set all tables to have consistent width */
+    width: 90%;
     max-width: 90%;
     border-collapse: collapse;
     margin-top: 20px;
@@ -107,7 +107,7 @@ th, td {
 
 thead {
     background-color: #4CAF50;
-    color: black; /* Change header text color to black for visibility */
+    color: black;
 }
 
 /* Set column widths to maintain consistency */
@@ -133,7 +133,6 @@ td:nth-child(2) {
         padding: 10px 5px;
     }
 
-    /* Allow scrolling for wide tables on small devices */
     #table-container {
         overflow-x: auto;
     }
@@ -145,13 +144,61 @@ button {
     color: white;
     border: none;
     padding: 10px 20px;
-    margin: 10px 0;
+    margin: 10px 5px;
     border-radius: 5px;
     cursor: pointer;
+    vertical-align: middle;
 }
 
 button:hover {
     background-color: #45a049;
+}
+
+/* Day Header Styling */
+.day-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 800px;
+}
+
+.day-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.day-date {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-right: 20px;
+}
+
+/* Entry Header Styling */
+.entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 800px;
+    margin-top: 10px;
+}
+
+.entry-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.entry-indent {
+    margin-left: 30px;
+}
+
+.expand-button,
+.generate-report-button,
+.expand-entry-button {
+    margin: 5px;
 }
 
 /* Icon Styling */
@@ -167,9 +214,18 @@ main {
     width: 100%;
 }
 
+.title {
+    text-align: center;
+}
+
 /* Result Container Styling */
 #result {
     text-align: center;
+}
+
+#entries-container {
+    align-self: flex-start;
+    margin-left: 20px;
 }
 
 /* Video Styling */

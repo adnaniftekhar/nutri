@@ -128,22 +128,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const lines = messageContent.split('\n');
         lines.forEach(line => {
             // Remove any "*" from the line
-            line = line.replace(/\*/g, '');
+            line = line.replace(/\*/g, '').trim();
+
+            // Skip empty lines
+            if (line === '') return;
 
             // Split by either ":" or "|", trimming whitespace from both ends
-            const delimiter = line.includes('|') ? '|' : ':';
-            const parts = line.split(delimiter);
+            let delimiter = '';
+            if (line.includes('|')) {
+                delimiter = '|';
+            } else if (line.includes(':')) {
+                delimiter = ':';
+            }
 
-            if (parts.length === 2) {
-                const [name, value] = parts;
-                // Add each nutrient and value to the table
-                tableHTML += `
-                    <tr>
-                        <td>${name.trim()}</td>
-                        <td>${value.trim()}</td>
-                    </tr>`;
+            if (delimiter) {
+                const parts = line.split(delimiter).map(part => part.trim());
+
+                if (parts.length >= 2) {
+                    const [name, value] = parts;
+                    // Add each nutrient and value to the table
+                    tableHTML += `
+                        <tr>
+                            <td>${name}</td>
+                            <td>${value}</td>
+                        </tr>`;
+                } else {
+                    // Accumulate non-table content into the additional content string
+                    additionalContent += line.trim() + ' ';
+                }
             } else {
-                // Accumulate non-table content into the additional content string
+                // If no delimiter is found, add the line to additional content
                 additionalContent += line.trim() + ' ';
             }
         });
