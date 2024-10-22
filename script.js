@@ -36,12 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Function to get the back camera stream with iOS-specific constraints
         async function startCamera() {
             try {
-                // Define constraints to select the back camera with exact facingMode for iOS compatibility
+                // Define constraints to select the back camera with ideal facingMode for better compatibility
                 const constraints = {
                     video: {
                         width: { ideal: 1280 },
                         height: { ideal: 720 },
-                        facingMode: { exact: 'environment' } // Use `exact` for better iOS compatibility
+                        facingMode: { ideal: 'environment' } // Use `ideal` for better iOS compatibility
                     }
                 };
 
@@ -62,6 +62,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Error accessing the camera:', error);
                 if (resultDiv) {
                     resultDiv.textContent = 'Unable to access the camera. Please check your permissions and ensure you are using a secure (HTTPS) connection.';
+                }
+
+                // Fallback for iOS devices if initial constraints fail
+                if (error.name === 'OverconstrainedError' || error.name === 'NotFoundError') {
+                    try {
+                        console.log('Attempting fallback constraints for iOS compatibility...');
+                        const fallbackConstraints = {
+                            video: true
+                        };
+                        const stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+                        video.srcObject = stream;
+                    } catch (fallbackError) {
+                        console.error('Fallback error accessing the camera:', fallbackError);
+                        if (resultDiv) {
+                            resultDiv.textContent = 'Unable to access the camera even with fallback settings. Please try again.';
+                        }
+                    }
                 }
             }
         }
