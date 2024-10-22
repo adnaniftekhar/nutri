@@ -145,55 +145,49 @@ document.addEventListener('DOMContentLoaded', () => {
         let width = video.videoWidth;
         let height = video.videoHeight;
 
-        if (width && height) {
-            if (width > height) {
-                if (width > MAX_WIDTH) {
-                    height *= MAX_WIDTH / width;
-                    width = MAX_WIDTH;
-                }
-            } else {
-                if (height > MAX_HEIGHT) {
-                    width *= MAX_HEIGHT / height;
-                    height = MAX_HEIGHT;
-                }
+        if (width > height) {
+            if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
             }
-
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, width, height);
-
-            canvas.toBlob(async (blob) => {
-                const formData = new FormData();
-                formData.append('image', blob, 'captured_image.png');
-                resultDiv.innerHTML = '<h2>Please wait, processing...</h2>';
-
-                // Store the captured image data
-                capturedImageData = canvas.toDataURL();
-
-                try {
-                    const response = await fetch('https://nutribackend-35880e8a6669.herokuapp.com/analyze', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Error analyzing image');
-                    }
-
-                    const result = await response.json();
-                    console.log('Response from backend:', result);
-                    displayResult(result, canvas); // Pass the canvas to displayResult
-                    editButton.style.display = 'block';
-                } catch (error) {
-                    console.error('Error analyzing image:', error);
-                    resultDiv.innerHTML = 'Error analyzing image. Please try again.';
-                }
-            }, 'image/png', 0.5);
         } else {
-            console.error('Video dimensions are not available.');
-            resultDiv.innerHTML = 'Error capturing image. Please try again.';
+            if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+            }
         }
+
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(video, 0, 0, width, height);
+
+        canvas.toBlob(async (blob) => {
+            const formData = new FormData();
+            formData.append('image', blob, 'captured_image.png');
+            resultDiv.innerHTML = '<h2>Please wait, processing...</h2>';
+
+            // Store the captured image data
+            capturedImageData = canvas.toDataURL();
+
+            try {
+                const response = await fetch('https://nutribackend-35880e8a6669.herokuapp.com/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error analyzing image');
+                }
+
+                const result = await response.json();
+                console.log('Response from backend:', result);
+                displayResult(result, canvas); // Pass the canvas to displayResult
+                showEditButton();
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = 'Error analyzing image. Please try again.';
+            }
+        }, 'image/png', 0.5);
     }
 
     function displayResult(result, canvas) {
