@@ -36,20 +36,29 @@ document.addEventListener('DOMContentLoaded', () => {
         // Function to get the back camera stream
         async function startCamera() {
             try {
-                // Define constraints to select the back camera if available
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                let backCameraDeviceId = null;
+                videoDevices.forEach(device => {
+                    if (device.label.toLowerCase().includes('back')) {
+                        backCameraDeviceId = device.deviceId;
+                    }
+                });
+
                 const constraints = {
                     video: {
-                        facingMode: { ideal: "environment" } // Prefer the back camera
+                        deviceId: backCameraDeviceId ? { exact: backCameraDeviceId } : undefined,
+                        facingMode: backCameraDeviceId ? undefined : { ideal: "environment" }
                     }
                 };
 
-                // Request the camera stream with updated constraints
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
             } catch (error) {
                 console.error('Error accessing the camera:', error);
                 if (resultDiv) {
-                    resultDiv.textContent = 'Unable to access the camera. Please check your permissions and ensure you are using a secure (HTTPS) connection.';
+                    resultDiv.textContent = 'Unable to access the camera. Please check your permissions.';
                 }
             }
         }
@@ -154,13 +163,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayResult(result, canvas) {
-        resultDiv.innerHTML = '';
+        resultDiv.innerHTML = ''; 
 
         // Create an image element to display the captured image
         const imgElement = document.createElement('img');
-        imgElement.src = canvas.toDataURL();
+        imgElement.src = canvas.toDataURL(); // Assuming you have access to the canvas
         imgElement.alt = 'Captured Image';
-        imgElement.style.maxWidth = '100%';
+        imgElement.style.maxWidth = '100%'; // Make sure the image is responsive
         imgElement.style.height = 'auto';
 
         // Append the image to the resultDiv
@@ -202,11 +211,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Display the captured image
         if (capturedImageData) {
             const imgElement = document.createElement('img');
-            imgElement.src = capturedImageData;
+            imgElement.src = capturedImageData; // Use the stored image data
             imgElement.alt = 'Captured Image';
-            imgElement.style.maxWidth = '100%';
+            imgElement.style.maxWidth = '100%'; // Make sure the image is responsive
             imgElement.style.height = 'auto';
-            resultDiv.appendChild(imgElement);
+            resultDiv.appendChild(imgElement); // Append the image to the resultDiv
         }
 
         if (result && result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content) {
@@ -260,6 +269,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tableHTML += '</table>';
 
-        return [tableHTML, narrativeText.trim()];
+        return [
+            tableHTML,
+            narrativeText.trim()
+        ];
+    }
+
+    function showEditButton() {
+        editButton.style.display = 'block';
     }
 });
