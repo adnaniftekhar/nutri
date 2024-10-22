@@ -33,19 +33,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Only run camera-related code if the video element exists
     if (video) {
-        // Function to get the back camera stream
+        // Function to get the back camera stream with iOS-specific constraints
         async function startCamera() {
             try {
-                // Define constraints to select the back camera if available
+                // Define constraints to select the back camera with exact facingMode for iOS compatibility
                 const constraints = {
                     video: {
-                        facingMode: { ideal: "environment" } // Prefer the back camera
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: { exact: 'environment' } // Use `exact` for better iOS compatibility
                     }
                 };
 
                 // Request the camera stream with updated constraints
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
+
+                // Fix for iOS: Reload page if stream ends
+                stream.getTracks().forEach(track => {
+                    track.addEventListener('ended', () => {
+                        console.log("Stream ended. Re-initializing camera...");
+                        startCamera();
+                    });
+                });
+
+                console.log("Camera stream started successfully.");
             } catch (error) {
                 console.error('Error accessing the camera:', error);
                 if (resultDiv) {
@@ -154,13 +166,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayResult(result, canvas) {
-        resultDiv.innerHTML = '';
+        resultDiv.innerHTML = ''; 
 
         // Create an image element to display the captured image
         const imgElement = document.createElement('img');
-        imgElement.src = canvas.toDataURL();
+        imgElement.src = canvas.toDataURL(); // Assuming you have access to the canvas
         imgElement.alt = 'Captured Image';
-        imgElement.style.maxWidth = '100%';
+        imgElement.style.maxWidth = '100%'; // Make sure the image is responsive
         imgElement.style.height = 'auto';
 
         // Append the image to the resultDiv
@@ -202,11 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Display the captured image
         if (capturedImageData) {
             const imgElement = document.createElement('img');
-            imgElement.src = capturedImageData;
+            imgElement.src = capturedImageData; // Use the stored image data
             imgElement.alt = 'Captured Image';
-            imgElement.style.maxWidth = '100%';
+            imgElement.style.maxWidth = '100%'; // Make sure the image is responsive
             imgElement.style.height = 'auto';
-            resultDiv.appendChild(imgElement);
+            resultDiv.appendChild(imgElement); // Append the image to the resultDiv
         }
 
         if (result && result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content) {
