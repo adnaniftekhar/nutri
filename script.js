@@ -39,16 +39,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Define constraints to select the back camera with ideal facingMode for better compatibility
                 const constraints = {
                     video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: { ideal: 'environment' } // Use `ideal` for better iOS compatibility
+                        facingMode: { ideal: 'environment' }, // Use `ideal` for better iOS compatibility
+                        width: { min: 640, ideal: 1280 },
+                        height: { min: 480, ideal: 720 }
                     }
                 };
 
                 // Request the camera stream with updated constraints
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
-                video.play(); // Explicitly start playing the video
+
+                // Force video to play after metadata has loaded
+                video.addEventListener('loadedmetadata', () => {
+                    video.play().catch(error => console.error('Error starting video playback:', error));
+                });
 
                 // Fix for iOS: Reload page if stream ends
                 stream.getTracks().forEach(track => {
@@ -70,11 +74,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     try {
                         console.log('Attempting fallback constraints for iOS compatibility...');
                         const fallbackConstraints = {
-                            video: true
+                            video: {
+                                facingMode: 'user', // Switch to front camera if back camera fails
+                                width: { min: 640 },
+                                height: { min: 480 }
+                            }
                         };
                         const stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
                         video.srcObject = stream;
-                        video.play(); // Explicitly start playing the video
+
+                        video.addEventListener('loadedmetadata', () => {
+                            video.play().catch(fallbackError => console.error('Error starting fallback video playback:', fallbackError));
+                        });
                     } catch (fallbackError) {
                         console.error('Fallback error accessing the camera:', fallbackError);
                         if (resultDiv) {
