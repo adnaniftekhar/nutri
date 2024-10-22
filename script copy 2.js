@@ -31,43 +31,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Function to detect iOS devices
-    function isIOS() {
-        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    }
-
     // Only run camera-related code if the video element exists
     if (video) {
         // Function to get the back camera stream with iOS-specific constraints
         async function startCamera() {
             try {
-                // Adjust constraints based on device
-                let constraints;
-                if (isIOS()) {
-                    constraints = {
-                        video: {
-                            facingMode: 'environment', // Remove 'ideal' for iOS
-                            width: 1280,
-                            height: 720
-                        }
-                    };
-                } else {
-                    constraints = {
-                        video: {
-                            facingMode: { ideal: 'environment' },
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        }
-                    };
-                }
+                // Define constraints to select the back camera with ideal facingMode for better compatibility
+                const constraints = {
+                    video: {
+                        facingMode: { ideal: 'environment' }, // Use `ideal` for better iOS compatibility
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
 
                 // Request the camera stream with updated constraints
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
-
-                // Set playsinline and muted attributes for iOS
-                video.setAttribute('playsinline', true); // Important for iOS
-                video.muted = true; // Required for autoplay on iOS
 
                 // Force video to play after metadata has loaded
                 video.addEventListener('loadedmetadata', () => {
@@ -92,20 +72,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Fallback for iOS devices if initial constraints fail
                 if (error.name === 'OverconstrainedError' || error.name === 'NotFoundError') {
                     try {
-                        console.log('Attempting fallback constraints for compatibility...');
+                        console.log('Attempting fallback constraints for iOS compatibility...');
                         const fallbackConstraints = {
                             video: {
                                 facingMode: 'user', // Switch to front camera if back camera fails
-                                width: 640,
-                                height: 480
+                                width: { ideal: 640 },
+                                height: { ideal: 480 }
                             }
                         };
                         const stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
                         video.srcObject = stream;
-
-                        // Set playsinline and muted attributes for iOS
-                        video.setAttribute('playsinline', true); // Important for iOS
-                        video.muted = true; // Required for autoplay on iOS
 
                         video.addEventListener('loadedmetadata', () => {
                             video.play().catch(fallbackError => console.error('Error starting fallback video playback:', fallbackError));
@@ -221,13 +197,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayResult(result, canvas) {
-        resultDiv.innerHTML = '';
+        resultDiv.innerHTML = ''; 
 
         // Create an image element to display the captured image
         const imgElement = document.createElement('img');
-        imgElement.src = canvas.toDataURL();
+        imgElement.src = canvas.toDataURL(); // Assuming you have access to the canvas
         imgElement.alt = 'Captured Image';
-        imgElement.style.maxWidth = '100%';
+        imgElement.style.maxWidth = '100%'; // Make sure the image is responsive
         imgElement.style.height = 'auto';
 
         // Append the image to the resultDiv
@@ -271,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const imgElement = document.createElement('img');
             imgElement.src = capturedImageData; // Use the stored image data
             imgElement.alt = 'Captured Image';
-            imgElement.style.maxWidth = '100%';
+            imgElement.style.maxWidth = '100%'; // Make sure the image is responsive
             imgElement.style.height = 'auto';
             resultDiv.appendChild(imgElement); // Append the image to the resultDiv
         }
