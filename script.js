@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('video');
-    const startCameraButton = document.getElementById('start-camera');
     const captureButton = document.getElementById('capture');
     const resultDiv = document.getElementById('result');
     const tableContainer = document.getElementById('table-container');
@@ -13,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hamburger = document.getElementById('hamburger');
     const menu = document.getElementById('menu');
     const googleLoginButton = document.querySelector('.google-login-button');
+    const overlay = document.getElementById('overlay'); // Overlay for starting camera
 
     // JavaScript to toggle the menu
     if (hamburger && menu) {
@@ -38,29 +38,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (video) {
-        // Function to get the back camera stream with iOS-specific constraints
+        // Function to get the back camera stream
         async function startCamera() {
             try {
-                let constraints;
-                if (isIOS()) {
-                    constraints = {
-                        video: {
-                            facingMode: 'environment',
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        },
-                        audio: false
-                    };
-                } else {
-                    constraints = {
-                        video: {
-                            facingMode: { ideal: 'environment' },
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        },
-                        audio: false
-                    };
-                }
+                let constraints = {
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
 
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
@@ -69,9 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 video.setAttribute('playsinline', 'true');
                 video.setAttribute('autoplay', 'true');
                 video.setAttribute('muted', 'true');
-                video.muted = true; // Ensure the video is muted
+                video.muted = true;
 
-                // Start video playback after user interaction
                 await video.play();
 
                 // Handle stream end
@@ -91,10 +78,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Start the camera when the user clicks the 'Start Camera' button
-        startCameraButton.addEventListener('click', () => {
+        // Start the camera automatically on non-iOS devices
+        if (!isIOS()) {
             startCamera();
-        });
+        } else {
+            // For iOS devices, show overlay to prompt user interaction
+            overlay.style.display = 'flex';
+
+            overlay.addEventListener('click', () => {
+                overlay.style.display = 'none';
+                startCamera();
+            });
+        }
 
         // Capture image from the video feed
         captureButton.addEventListener('click', () => {
@@ -142,8 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function captureAndAnalyzeImage() {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = video.videoWidth; // Adapt to video width dynamically
-        const MAX_HEIGHT = video.videoHeight; // Adapt to video height dynamically
+        const MAX_WIDTH = video.videoWidth;
+        const MAX_HEIGHT = video.videoHeight;
         let width = video.videoWidth;
         let height = video.videoHeight;
 
