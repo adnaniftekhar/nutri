@@ -47,209 +47,233 @@
                 return;
             }
 
-            let entries = JSON.parse(localStorage.getItem("nutritionalEntries")) || [];
+            // Function to display entries
+            function displayEntries() {
+                let entries = JSON.parse(localStorage.getItem("nutritionalEntries")) || [];
 
-            if (entries.length === 0) {
-                entriesContainer.innerHTML = '<p>No entries found.</p>';
-            } else {
-                // Group entries by date
-                const groupedEntries = entries.reduce((acc, entry) => {
-                    const entryDate = new Date(entry.dateTime).toLocaleDateString();
-                    if (!acc[entryDate]) {
-                        acc[entryDate] = [];
-                    }
-                    acc[entryDate].push(entry);
-                    return acc;
-                }, {});
+                entriesContainer.innerHTML = ''; // Clear current entries
 
-                // Display entries grouped by date
-                Object.keys(groupedEntries).forEach(date => {
-                    const dayDiv = document.createElement('div');
-                    dayDiv.classList.add('day-summary');
-                    dayDiv.innerHTML = `
-                        <div class="day-header">
-                            <div class="day-controls">
-                                <button class="expand-button" data-date="${date}">+</button>
-                                <h2 class="day-date">${date}</h2>
+                if (entries.length === 0) {
+                    entriesContainer.innerHTML = '<p>No entries found.</p>';
+                } else {
+                    // Group entries by date
+                    const groupedEntries = entries.reduce((acc, entry) => {
+                        const entryDate = new Date(entry.dateTime).toLocaleDateString();
+                        if (!acc[entryDate]) {
+                            acc[entryDate] = [];
+                        }
+                        acc[entryDate].push(entry);
+                        return acc;
+                    }, {});
+
+                    // Display entries grouped by date
+                    Object.keys(groupedEntries).forEach(date => {
+                        const dayDiv = document.createElement('div');
+                        dayDiv.classList.add('day-summary');
+                        dayDiv.innerHTML = `
+                            <div class="day-header">
+                                <div class="day-controls">
+                                    <button class="expand-button" data-date="${date}">+</button>
+                                    <h2 class="day-date">${date}</h2>
+                                </div>
+                                <button class="generate-report-button" data-date="${date}" style="display: none;">Generate Daily Report</button>
                             </div>
-                            <button class="generate-report-button" data-date="${date}" style="display: none;">Generate Daily Report</button>
-                        </div>
-                        <div class="day-entries" style="display: none;"></div>
-                    `;
+                            <div class="day-entries" style="display: none;"></div>
+                        `;
 
-                    entriesContainer.appendChild(dayDiv);
+                        entriesContainer.appendChild(dayDiv);
 
-                    const dayEntriesDiv = dayDiv.querySelector('.day-entries');
-                    if (dayEntriesDiv) {
-                        groupedEntries[date].forEach((entry, index) => {
-                            const entryDiv = document.createElement('div');
-                            entryDiv.classList.add("entry-summary");
-                            entryDiv.innerHTML = `
-                                <div class="entry-header">
-                                    <div class="entry-controls entry-indent">
-                                        <button class="expand-entry-button" data-index="${index}">+</button>
-                                        <h3 class="entry-title">Nutritional Analysis for ${entry.foodItem} (${new Date(entry.dateTime).toLocaleString()})</h3>
+                        const dayEntriesDiv = dayDiv.querySelector('.day-entries');
+                        if (dayEntriesDiv) {
+                            groupedEntries[date].forEach((entry, index) => {
+                                const entryDiv = document.createElement('div');
+                                entryDiv.classList.add("entry-summary");
+                                entryDiv.innerHTML = `
+                                    <div class="entry-header">
+                                        <div class="entry-controls entry-indent">
+                                            <button class="expand-entry-button" data-index="${index}">+</button>
+                                            <h3 class="entry-title">Nutritional Analysis for ${entry.foodItem} (${new Date(entry.dateTime).toLocaleString()})</h3>
+                                            <button class="delete-entry-button" data-index="${index}">
+                                                <img src="trash-icon.png" alt="Delete" style="width: 20px; height: 20px;">
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="entry-details" style="display: none;">
-                                    ${entry.tableHTML}
-                                </div>
-                            `;
-                            dayEntriesDiv.appendChild(entryDiv);
+                                    <div class="entry-details" style="display: none;">
+                                        ${entry.tableHTML}
+                                    </div>
+                                `;
+                                dayEntriesDiv.appendChild(entryDiv);
+                            });
+                        } else {
+                            console.error(`dayEntriesDiv not found for date: ${date}. Cannot append entries.`);
+                        }
+                    });
+
+                    // Add event listeners for delete buttons
+                    document.querySelectorAll(".delete-entry-button").forEach(button => {
+                        button.addEventListener("click", (event) => {
+                            const index = button.getAttribute("data-index");
+                            // Remove the entry from local storage
+                            entries = entries.filter((_, i) => i !== parseInt(index));
+                            localStorage.setItem("nutritionalEntries", JSON.stringify(entries));
+
+                            // Refresh the displayed entries
+                            displayEntries(); // Call the function to refresh entries
                         });
-                    } else {
-                        console.error(`dayEntriesDiv not found for date: ${date}. Cannot append entries.`);
-                    }
-                });
-
-                // Add event listeners for expand buttons
-                document.querySelectorAll(".expand-button").forEach(button => {
-                    button.addEventListener("click", () => {
-                        const dayEntriesDiv = button.parentElement.parentElement.parentElement.querySelector(".day-entries");
-                        const reportButton = button.parentElement.parentElement.querySelector(".generate-report-button");
-
-                        if (dayEntriesDiv && reportButton) {
-                            if (dayEntriesDiv.style.display === "none") {
-                                dayEntriesDiv.style.display = "block";
-                                button.innerText = "-";
-                                reportButton.style.display = "inline-block";
-                            } else {
-                                dayEntriesDiv.style.display = "none";
-                                button.innerText = "+";
-                                reportButton.style.display = "none";
-                            }
-                        } else {
-                            console.error("Unable to find dayEntriesDiv or reportButton for expanding/collapsing entries.");
-                        }
                     });
-                });
 
-                // Add event listeners for expand entry buttons
-                document.querySelectorAll(".expand-entry-button").forEach(button => {
-                    button.addEventListener("click", () => {
-                        const detailsDiv = button.parentElement.parentElement.parentElement.querySelector(".entry-details");
+                    // Add event listeners for expand buttons
+                    document.querySelectorAll(".expand-button").forEach(button => {
+                        button.addEventListener("click", () => {
+                            const dayEntriesDiv = button.parentElement.parentElement.parentElement.querySelector(".day-entries");
+                            const reportButton = button.parentElement.parentElement.querySelector(".generate-report-button");
 
-                        if (detailsDiv) {
-                            if (detailsDiv.style.display === "none") {
-                                detailsDiv.style.display = "block";
-                                button.innerText = "-";
+                            if (dayEntriesDiv && reportButton) {
+                                if (dayEntriesDiv.style.display === "none") {
+                                    dayEntriesDiv.style.display = "block";
+                                    button.innerText = "-";
+                                    reportButton.style.display = "inline-block";
+                                } else {
+                                    dayEntriesDiv.style.display = "none";
+                                    button.innerText = "+";
+                                    reportButton.style.display = "none";
+                                }
                             } else {
-                                detailsDiv.style.display = "none";
-                                button.innerText = "+";
+                                console.error("Unable to find dayEntriesDiv or reportButton for expanding/collapsing entries.");
                             }
-                        } else {
-                            console.error("detailsDiv not found for button:", button);
-                        }
+                        });
                     });
-                });
 
-                // Add event listeners for generate report buttons
-                document.querySelectorAll(".generate-report-button").forEach(button => {
-                    button.addEventListener("click", (event) => {
-                        event.preventDefault(); // Prevent immediate navigation
-                        const date = button.getAttribute("data-date");
-                        const dayEntries = groupedEntries[date];
-                        const aggregatedNutrients = {};
+                    // Add event listeners for expand entry buttons
+                    document.querySelectorAll(".expand-entry-button").forEach(button => {
+                        button.addEventListener("click", () => {
+                            const detailsDiv = button.parentElement.parentElement.parentElement.querySelector(".entry-details");
 
-                        console.log(`Generating report for ${date}`);
-                        console.log(`Day entries for ${date}:`, dayEntries);
+                            if (detailsDiv) {
+                                if (detailsDiv.style.display === "none") {
+                                    detailsDiv.style.display = "block";
+                                    button.innerText = "-";
+                                } else {
+                                    detailsDiv.style.display = "none";
+                                    button.innerText = "+";
+                                }
+                            } else {
+                                console.error("detailsDiv not found for button:", button);
+                            }
+                        });
+                    });
 
-                        // Aggregate nutrients from all entries for the day
-                        dayEntries.forEach(entry => {
-                            console.log(`Processing entry for ${entry.foodItem}:`, entry.tableHTML);
+                    // Add event listeners for generate report buttons
+                    document.querySelectorAll(".generate-report-button").forEach(button => {
+                        button.addEventListener("click", (event) => {
+                            event.preventDefault(); // Prevent immediate navigation
+                            const date = button.getAttribute("data-date");
+                            const dayEntries = groupedEntries[date];
+                            const aggregatedNutrients = {};
 
-                            if (!entry.tableHTML) {
-                                console.warn(`Entry missing tableHTML for ${entry.foodItem}`);
+                            console.log(`Generating report for ${date}`);
+                            console.log(`Day entries for ${date}:`, dayEntries);
+
+                            // Aggregate nutrients from all entries for the day
+                            dayEntries.forEach(entry => {
+                                console.log(`Processing entry for ${entry.foodItem}:`, entry.tableHTML);
+
+                                if (!entry.tableHTML) {
+                                    console.warn(`Entry missing tableHTML for ${entry.foodItem}`);
+                                    return;
+                                }
+
+                                // Improved Regex for matching <tr> rows, preserving units like g, mg, mcg
+                                const nutrients = entry.tableHTML.match(/<tr[^>]*>\s*<td[^>]*>(.*?)<\/td>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/gi);
+                                if (nutrients) {
+                                    nutrients.forEach(nutrientRow => {
+                                        const match = nutrientRow.match(/<tr[^>]*>\s*<td[^>]*>(.*?)<\/td>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/i);
+                                        if (match) {
+                                            const [, nutrient, value] = match;
+
+                                            // Exclude rows based on the nutrient name
+                                            if (/confidence|note/i.test(nutrient) || nutrient.split(' ').length > 3) {
+                                                console.warn(`Skipping nutrient: ${nutrient} due to filter criteria.`);
+                                                return;
+                                            }
+
+                                            const valueWithUnits = value.trim();
+
+                                            // Separate numeric value and units
+                                            const numericValue = parseFloat(valueWithUnits.replace(/[^0-9.]/g, ''));
+                                            const unit = valueWithUnits.replace(/[0-9.]/g, '').trim();
+
+                                            if (numericValue > 0) {
+                                                if (!aggregatedNutrients[nutrient]) {
+                                                    aggregatedNutrients[nutrient] = { value: 0, unit: unit };
+                                                }
+
+                                                if (aggregatedNutrients[nutrient].unit === unit) {
+                                                    aggregatedNutrients[nutrient].value += numericValue;
+                                                } else {
+                                                    console.warn(`Unit mismatch for ${nutrient}: existing unit (${aggregatedNutrients[nutrient].unit}), new unit (${unit}).`);
+                                                    // Handle unit conversion logic if needed.
+                                                }
+
+                                                // Ensure value is formatted to two decimal places
+                                                aggregatedNutrients[nutrient].value = parseFloat(aggregatedNutrients[nutrient].value.toFixed(2));
+                                                aggregatedNutrients[nutrient].unit = unit;
+
+                                                console.log(`Parsed nutrient: ${nutrient}, Value: ${numericValue} ${unit}`);
+                                            }
+                                        } else {
+                                            console.warn(`Could not parse nutrient row: ${nutrientRow}`);
+                                        }
+                                    });
+                                } else {
+                                    console.warn(`No nutrient rows found in entry.tableHTML for ${entry.foodItem}`);
+                                }
+                            });
+
+                            // Remove nutrients with value 0
+                            Object.keys(aggregatedNutrients).forEach(nutrient => {
+                                if (aggregatedNutrients[nutrient].value === 0) {
+                                    delete aggregatedNutrients[nutrient];
+                                }
+                            });
+
+                            console.log(`Aggregated Nutrients for ${date}:`, aggregatedNutrients);
+
+                            if (Object.keys(aggregatedNutrients).length === 0) {
+                                alert("No nutrients found to generate the report. Please check the data format.");
                                 return;
                             }
 
-                            // Improved Regex for matching <tr> rows, preserving units like g, mg, mcg
-                            const nutrients = entry.tableHTML.match(/<tr[^>]*>\s*<td[^>]*>(.*?)<\/td>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/gi);
-                            if (nutrients) {
-                                nutrients.forEach(nutrientRow => {
-                                    const match = nutrientRow.match(/<tr[^>]*>\s*<td[^>]*>(.*?)<\/td>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/i);
-                                    if (match) {
-                                        const [, nutrient, value] = match;
-
-                                        // Exclude rows based on the nutrient name
-                                        if (/confidence|note/i.test(nutrient) || nutrient.split(' ').length > 3) {
-                                            console.warn(`Skipping nutrient: ${nutrient} due to filter criteria.`);
-                                            return;
-                                        }
-
-                                        const valueWithUnits = value.trim();
-
-                                        // Separate numeric value and units
-                                        const numericValue = parseFloat(valueWithUnits.replace(/[^0-9.]/g, ''));
-                                        const unit = valueWithUnits.replace(/[0-9.]/g, '').trim();
-
-                                        if (numericValue > 0) {
-                                            if (!aggregatedNutrients[nutrient]) {
-                                                aggregatedNutrients[nutrient] = { value: 0, unit: unit };
-                                            }
-
-                                            if (aggregatedNutrients[nutrient].unit === unit) {
-                                                aggregatedNutrients[nutrient].value += numericValue;
-                                            } else {
-                                                console.warn(`Unit mismatch for ${nutrient}: existing unit (${aggregatedNutrients[nutrient].unit}), new unit (${unit}).`);
-                                                // Handle unit conversion logic if needed.
-                                            }
-
-                                            // Ensure value is formatted to two decimal places
-                                            aggregatedNutrients[nutrient].value = parseFloat(aggregatedNutrients[nutrient].value.toFixed(2));
-                                            aggregatedNutrients[nutrient].unit = unit;
-
-                                            console.log(`Parsed nutrient: ${nutrient}, Value: ${numericValue} ${unit}`);
-                                        }
-                                    } else {
-                                        console.warn(`Could not parse nutrient row: ${nutrientRow}`);
-                                    }
+                            // Store the aggregated data in localStorage
+                            try {
+                                const reportData = {};
+                                Object.keys(aggregatedNutrients).sort().forEach(nutrient => {
+                                    // Remove space between value and unit
+                                    reportData[nutrient] = `${aggregatedNutrients[nutrient].value}${aggregatedNutrients[nutrient].unit}`;
                                 });
-                            } else {
-                                console.warn(`No nutrient rows found in entry.tableHTML for ${entry.foodItem}`);
+                                localStorage.setItem(`report_${date}`, JSON.stringify(reportData));
+                            } catch (error) {
+                                console.error("Error storing aggregated nutrients:", error);
+                                alert("An error occurred while saving the report. Please try again.");
+                                return;
                             }
+
+                            // Delay navigation to allow checking for errors
+                            setTimeout(() => {
+                                window.location.href = `report.html?date=${date}`;
+                            }, 500);
+
+                            // Change button to "Edit Daily Report" and turn grey
+                            button.innerText = "Edit Daily Report";
+                            button.style.backgroundColor = "grey";
+                            button.disabled = true;
                         });
-
-                        // Remove nutrients with value 0
-                        Object.keys(aggregatedNutrients).forEach(nutrient => {
-                            if (aggregatedNutrients[nutrient].value === 0) {
-                                delete aggregatedNutrients[nutrient];
-                            }
-                        });
-
-                        console.log(`Aggregated Nutrients for ${date}:`, aggregatedNutrients);
-
-                        if (Object.keys(aggregatedNutrients).length === 0) {
-                            alert("No nutrients found to generate the report. Please check the data format.");
-                            return;
-                        }
-
-                        // Store the aggregated data in localStorage
-                        try {
-                            const reportData = {};
-                            Object.keys(aggregatedNutrients).sort().forEach(nutrient => {
-                                // Remove space between value and unit
-                                reportData[nutrient] = `${aggregatedNutrients[nutrient].value}${aggregatedNutrients[nutrient].unit}`;
-                            });
-                            localStorage.setItem(`report_${date}`, JSON.stringify(reportData));
-                        } catch (error) {
-                            console.error("Error storing aggregated nutrients:", error);
-                            alert("An error occurred while saving the report. Please try again.");
-                            return;
-                        }
-
-                        // Delay navigation to allow checking for errors
-                        setTimeout(() => {
-                            window.location.href = `report.html?date=${date}`;
-                        }, 500);
-
-                        // Change button to "Edit Daily Report" and turn grey
-                        button.innerText = "Edit Daily Report";
-                        button.style.backgroundColor = "grey";
-                        button.disabled = true;
                     });
-                });
+                }
             }
+
+            // Initial display of entries
+            displayEntries();
         });
     </script>
 </body>
