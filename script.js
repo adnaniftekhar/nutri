@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('video');
+    const startCameraButton = document.getElementById('start-camera');
     const captureButton = document.getElementById('capture');
     const resultDiv = document.getElementById('result');
     const tableContainer = document.getElementById('table-container');
@@ -79,8 +80,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Start the camera on page load
-        startCamera();
+        // Check if iOS device
+        if (isIOS()) {
+            // Show the Start Camera button on iOS devices
+            startCameraButton.style.display = 'block';
+
+            startCameraButton.addEventListener('click', () => {
+                startCamera();
+                startCameraButton.style.display = 'none';
+            });
+        } else {
+            // Start the camera automatically on other devices
+            startCamera();
+        }
 
         // Capture image from the video feed
         captureButton.addEventListener('click', () => {
