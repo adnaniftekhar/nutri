@@ -40,8 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const constraints = {
                     video: {
                         facingMode: { ideal: 'environment' }, // Use `ideal` for better iOS compatibility
-                        width: { min: 640, ideal: 1280 },
-                        height: { min: 480, ideal: 720 }
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     }
                 };
 
@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         const fallbackConstraints = {
                             video: {
                                 facingMode: 'user', // Switch to front camera if back camera fails
-                                width: { min: 640 },
-                                height: { min: 480 }
+                                width: { ideal: 640 },
+                                height: { ideal: 480 }
                             }
                         };
                         const stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
@@ -145,11 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function captureAndAnalyzeImage() {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 180; // Set a maximum width
-        const MAX_HEIGHT = 180; // Set a maximum height
+        const MAX_WIDTH = video.videoWidth; // Adapt to video width dynamically
+        const MAX_HEIGHT = video.videoHeight; // Adapt to video height dynamically
         let width = video.videoWidth;
         let height = video.videoHeight;
 
+        // Maintain aspect ratio for mobile devices
         if (width > height) {
             if (width > MAX_WIDTH) {
                 height *= MAX_WIDTH / width;
