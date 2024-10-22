@@ -140,12 +140,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function captureAndAnalyzeImage() {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = video.videoWidth; // Adapt to video width dynamically
-        const MAX_HEIGHT = video.videoHeight; // Adapt to video height dynamically
+        const MAX_WIDTH = 180; // Set a maximum width
+        const MAX_HEIGHT = 180; // Set a maximum height
         let width = video.videoWidth;
         let height = video.videoHeight;
-
-        // Maintain aspect ratio for mobile devices
+    
         if (width > height) {
             if (width > MAX_WIDTH) {
                 height *= MAX_WIDTH / width;
@@ -157,29 +156,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 height = MAX_HEIGHT;
             }
         }
-
+    
         canvas.width = width;
         canvas.height = height;
         canvas.getContext('2d').drawImage(video, 0, 0, width, height);
-
+    
         canvas.toBlob(async (blob) => {
             const formData = new FormData();
             formData.append('image', blob, 'captured_image.png');
             resultDiv.innerHTML = '<h2>Please wait, processing...</h2>';
-
+    
             // Store the captured image data
             capturedImageData = canvas.toDataURL();
-
+    
             try {
                 const response = await fetch('https://nutribackend-35880e8a6669.herokuapp.com/analyze', {
                     method: 'POST',
                     body: formData
                 });
-
+    
                 if (!response.ok) {
                     throw new Error('Error analyzing image');
                 }
-
+    
                 const result = await response.json();
                 console.log('Response from backend:', result);
                 displayResult(result, canvas); // Pass the canvas to displayResult
@@ -190,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 'image/png', 0.5);
     }
+    
 
     function displayResult(result, canvas) {
         resultDiv.innerHTML = '';
