@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('video');
+    const startCameraButton = document.getElementById('start-camera');
     const captureButton = document.getElementById('capture');
     const resultDiv = document.getElementById('result');
     const tableContainer = document.getElementById('table-container');
@@ -36,20 +37,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return /iPhone|iPad|iPod/i.test(navigator.userAgent);
     }
 
-    // Only run camera-related code if the video element exists
     if (video) {
         // Function to get the back camera stream with iOS-specific constraints
         async function startCamera() {
             try {
-                // Adjust constraints based on device
                 let constraints;
                 if (isIOS()) {
                     constraints = {
                         video: {
-                            facingMode: 'environment', // Remove 'ideal' for iOS
-                            width: 1280,
-                            height: 720
-                        }
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        },
+                        audio: false
                     };
                 } else {
                     constraints = {
@@ -57,24 +57,24 @@ document.addEventListener('DOMContentLoaded', () => {
                             facingMode: { ideal: 'environment' },
                             width: { ideal: 1280 },
                             height: { ideal: 720 }
-                        }
+                        },
+                        audio: false
                     };
                 }
 
-                // Request the camera stream with updated constraints
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
 
-                // Set playsinline and muted attributes for iOS
-                video.setAttribute('playsinline', true); // Important for iOS
-                video.muted = true; // Required for autoplay on iOS
+                // Set video attributes
+                video.setAttribute('playsinline', 'true');
+                video.setAttribute('autoplay', 'true');
+                video.setAttribute('muted', 'true');
+                video.muted = true; // Ensure the video is muted
 
-                // Force video to play after metadata has loaded
-                video.addEventListener('loadedmetadata', () => {
-                    video.play().catch(error => console.error('Error starting video playback:', error));
-                });
+                // Start video playback after user interaction
+                await video.play();
 
-                // Fix for iOS: Reload page if stream ends
+                // Handle stream end
                 stream.getTracks().forEach(track => {
                     track.addEventListener('ended', () => {
                         console.log("Stream ended. Re-initializing camera...");
@@ -88,40 +88,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (resultDiv) {
                     resultDiv.textContent = 'Unable to access the camera. Please check your permissions and ensure you are using a secure (HTTPS) connection.';
                 }
-
-                // Fallback for iOS devices if initial constraints fail
-                if (error.name === 'OverconstrainedError' || error.name === 'NotFoundError') {
-                    try {
-                        console.log('Attempting fallback constraints for compatibility...');
-                        const fallbackConstraints = {
-                            video: {
-                                facingMode: 'user', // Switch to front camera if back camera fails
-                                width: 640,
-                                height: 480
-                            }
-                        };
-                        const stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
-                        video.srcObject = stream;
-
-                        // Set playsinline and muted attributes for iOS
-                        video.setAttribute('playsinline', true); // Important for iOS
-                        video.muted = true; // Required for autoplay on iOS
-
-                        video.addEventListener('loadedmetadata', () => {
-                            video.play().catch(fallbackError => console.error('Error starting fallback video playback:', fallbackError));
-                        });
-                    } catch (fallbackError) {
-                        console.error('Fallback error accessing the camera:', fallbackError);
-                        if (resultDiv) {
-                            resultDiv.textContent = 'Unable to access the camera even with fallback settings. Please try again.';
-                        }
-                    }
-                }
             }
         }
 
-        // Start the camera with the back camera if available
-        startCamera();
+        // Start the camera when the user clicks the 'Start Camera' button
+        startCameraButton.addEventListener('click', () => {
+            startCamera();
+        });
 
         // Capture image from the video feed
         captureButton.addEventListener('click', () => {
