@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Request the camera stream with updated constraints
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
+                video.play(); // Explicitly start playing the video
 
                 // Fix for iOS: Reload page if stream ends
                 stream.getTracks().forEach(track => {
@@ -73,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                         const stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
                         video.srcObject = stream;
+                        video.play(); // Explicitly start playing the video
                     } catch (fallbackError) {
                         console.error('Fallback error accessing the camera:', fallbackError);
                         if (resultDiv) {
