@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const foodItem = foodInput.value;
             console.log("Food item:", foodItem);
 
-            const response = await fetch("https://nutribackend-35880e8a6669.herokuapp.com/analyze-text", {
+            const response = await fetch("http://127.0.0.1:5000/analyze-text", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

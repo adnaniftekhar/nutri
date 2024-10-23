@@ -13,10 +13,21 @@
       height: calc(100vh - 60px);
     }
     .icon {
-      width: 240px;
-      height: 240px;
+      width: 200px;
+      height: 200px;
       margin: 0 20px;
       cursor: pointer;
+    }
+    .icon-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center the text under the icon */
+    }
+    .icon-wrapper p {
+      font-size: 24px; /* Increase font size */
+      color: green; /* Change text color to green */
+      text-align: center; /* Center the text */
+      margin-top: 10px; /* Add some space between the icon and text */
     }
   </style>
 </head>
@@ -40,8 +51,14 @@
   </header>
   <main>
     <div class="icon-container">
-      <img src="text.png" alt="Text Icon" class="icon" onclick="location.href='text.html'">
-      <img src="camera.png" alt="Camera Icon" class="icon" onclick="location.href='camera.html'">
+      <div class="icon-wrapper">
+        <img src="text.png" alt="Text Icon" class="icon" onclick="location.href='text.html'">
+        <p>[TEXT INPUT]</p> <!-- Added text under the left icon -->
+      </div>
+      <div class="icon-wrapper">
+        <img src="camera.png" alt="Camera Icon" class="icon" onclick="location.href='camera.html'">
+        <p>[CAMERA INPUT]</p> <!-- Added text under the right icon -->
+      </div>
     </div>
   </main>
   <script src="script.js"></script>
