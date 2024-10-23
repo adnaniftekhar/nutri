@@ -127,8 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const lines = messageContent.split('\n');
         lines.forEach(line => {
-            // Remove any "*" from the line
-            line = line.replace(/\*/g, '').trim();
+            // Remove any "*" or "+" from the line
+            line = line.replace(/[\*\+]/g, '').trim();
 
             // Skip empty lines
             if (line === '') return;
@@ -146,11 +146,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (parts.length >= 2) {
                     const [name, value] = parts;
+
+                    // Extract only the first number and preserve units
+                    const numericValue = value.match(/(\d+)(?:-\d+)?\s*(mg|g|mcg|kcal)?/i);
+                    const finalValue = numericValue ? `${numericValue[1]} ${numericValue[2] || ''}`.trim() : value; // Use the first number and unit or the original value
+
                     // Add each nutrient and value to the table
                     tableHTML += `
                         <tr>
                             <td>${name}</td>
-                            <td>${value}</td>
+                            <td>${finalValue}</td>
                         </tr>`;
                 } else {
                     // Accumulate non-table content into the additional content string

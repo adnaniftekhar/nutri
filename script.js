@@ -97,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let width = video.videoWidth;
         let height = video.videoHeight;
 
+        // Resize logic
         if (width > height) {
             if (width > MAX_WIDTH) {
                 height *= MAX_WIDTH / width;
@@ -128,46 +129,91 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Error analyzing image');
+                    throw new Error('Error analyzing image: ' + response.statusText);
                 }
 
-                const result = await response.json();
-                console.log('Response from backend:', result);
-                displayResult(result);
+                const analysisResult = await response.json();
+                console.log('Analysis result:', analysisResult);
+
+                // Check for valid content
+                const content = analysisResult.choices[0]?.message?.content || 'No valid content received.';
+                console.log("Content to display:", content);
+
+                // Create or update the result div
+                let newResultDiv = document.getElementById("result");
+                if (!newResultDiv) {
+                    newResultDiv = document.createElement('div');
+                    newResultDiv.id = "result";
+                    newResultDiv.classList.add("result-container");
+                    document.body.appendChild(newResultDiv); // Append to body or a specific container
+                }
+
+                // Parse the content to generate the table
+                const [tableHTML, additionalContent] = parseNutritionalInformation(content);
+
+                // Set the content using innerHTML, with a table and additional narrative if present
+                newResultDiv.innerHTML = `
+                    <h2>Nutritional Analysis</h2>
+                    <div id="table-container">
+                        ${tableHTML}
+                    </div>
+                    <p>${additionalContent}</p>
+                `;
+                console.log("Content set in resultDiv");
+
+                // Ensure the result div is visible
+                newResultDiv.style.display = 'block';
+
+                // Save current analysis to a variable for saving
+                currentAnalysis = {
+                    imageData: capturedImageData,
+                    tableHTML,
+                    narrative: additionalContent,
+                    dateTime: new Date().toISOString()
+                };
+
+                // Ensure Save Button is visible
+                saveButton.style.display = 'inline-block';
             } catch (error) {
-                console.error('Error:', error);
-                resultDiv.innerHTML = 'Error analyzing image. Please try again.';
+                console.error('Error during fetch or processing:', error);
+                resultDiv.innerHTML = '<p>An error occurred while processing your request. Please try again.</p>';
             }
         }, 'image/png', 0.5);
     }
 
     function displayResult(result) {
         console.log('Displaying analysis result');
-        if (result && result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content) {
-            const content = result.choices[0].message.content;
-            console.log('Parsed content from response:', content);
-            const [tableHTML, additionalContent] = parseNutritionalInformation(content);
-    
-            // Set the content using innerHTML, with a table and additional narrative if present
-            resultDiv.style.display = 'block';
-            tableContainer.style.display = 'block';
-            narrativeContainer.style.display = 'block';
-    
-            tableContainer.innerHTML = tableHTML;
-            narrativeContainer.innerHTML = `<p>${additionalContent}</p>`;
-    
-            console.log("Content set in tableContainer and narrativeContainer");
-    
-            // Updating current analysis with parsed data
-            currentAnalysis = {
-                imageData: capturedImageData,
-                tableHTML,
-                narrative: additionalContent,
-                dateTime: new Date().toISOString()
-            };
-    
-            // Ensure Save Button is visible
-            saveButton.style.display = 'inline-block';
+        if (result && result.choices && result.choices.length > 0) {
+            const message = result.choices[0].message;
+            if (message && message.content) {
+                const content = message.content;
+                console.log('Parsed content from response:', content);
+                const [tableHTML, additionalContent] = parseNutritionalInformation(content);
+
+                // Set the content using innerHTML, with a table and additional narrative if present
+                resultDiv.style.display = 'block';
+                tableContainer.style.display = 'block';
+                narrativeContainer.style.display = 'block';
+
+                tableContainer.innerHTML = tableHTML;
+                narrativeContainer.innerHTML = `<p>${additionalContent}</p>`;
+
+                console.log("Content set in tableContainer and narrativeContainer");
+
+                // Updating current analysis with parsed data
+                currentAnalysis = {
+                    imageData: capturedImageData,
+                    tableHTML,
+                    narrative: additionalContent,
+                    dateTime: new Date().toISOString()
+                };
+
+                // Ensure Save Button is visible
+                saveButton.style.display = 'inline-block';
+            } else {
+                console.error('No valid content in the response message');
+                resultDiv.innerHTML = '<p>No valid analysis information available.</p>';
+            }
         } else {
             console.error('No valid analysis information available');
             resultDiv.innerHTML = '<p>No valid analysis information available.</p>';
@@ -191,8 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const lines = messageContent.split('\n');
         lines.forEach(line => {
-            // Remove any "*" from the line
-            line = line.replace(/\*/g, '').trim();
+            // Remove any "*" or "+" from the line
+            line = line.replace(/[\*\+]/g, '').trim();
 
             // Skip empty lines
             if (line === '') return;
@@ -210,12 +256,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (parts.length >= 2) {
                     const [name, value] = parts;
+
+                    // Extract only the first number and preserve units
+                    const numericValue = value.match(/(\d+)(?:-\d+)?\s*(mg|g|mcg|kcal)?/i);
+                    const finalValue = numericValue ? `${numericValue[1]} ${numericValue[2] || ''}`.trim() : value; // Use the first number and unit or the original value
+
                     // Add each nutrient and value to the table
-                    console.log('Parsed nutrient:', name, 'value:', value);
                     tableHTML += `
                         <tr>
                             <td>${name}</td>
-                            <td>${value}</td>
+                            <td>${finalValue}</td>
                         </tr>`;
                 } else {
                     // Accumulate non-table content into the additional content string
@@ -223,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 // If no delimiter is found, add the line to additional content
-                console.warn('Line without recognized delimiter, adding to additional content:', line);
                 additionalContent += line.trim() + ' ';
             }
         });
