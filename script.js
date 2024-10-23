@@ -71,6 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         captureButton.addEventListener('click', () => {
             console.log('Capture button clicked');
+
+            // Hide the Save Button when capturing again
+            saveButton.style.display = 'none';
+
             captureAndAnalyzeImage();
         });
     }
@@ -91,6 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function captureAndAnalyzeImage() {
         console.log('Starting image capture and analysis');
+        
+        // Show the processing message immediately
+        resultDiv.innerHTML = '<h2>Please wait, processing... (takes about 18 seconds)</h2>';
+        resultDiv.style.display = 'block'; // Ensure the resultDiv is visible
+
         const canvas = document.createElement('canvas');
         const MAX_WIDTH = 180;
         const MAX_HEIGHT = 180;
@@ -117,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.toBlob(async (blob) => {
             const formData = new FormData();
             formData.append('image', blob, 'captured_image.png');
-            resultDiv.innerHTML = '<h2>Please wait, processing...</h2>';
 
             capturedImageData = canvas.toDataURL();
 
