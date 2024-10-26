@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let newResultDiv = document.createElement('div');
         newResultDiv.id = "result";
         newResultDiv.classList.add("result-container");
-        newResultDiv.innerText = 'Processing...';
+        newResultDiv.innerText = 'Processing... (takes about 18 seconds)';
 
         const oldResultDiv = document.getElementById("result");
         if (oldResultDiv) {
@@ -125,9 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         let additionalContent = '';
 
+        // Split the content into lines
         const lines = messageContent.split('\n');
         lines.forEach(line => {
-            // Remove any "*" or "+" from the line
+            // Remove any unwanted characters
             line = line.replace(/[\*\+]/g, '').trim();
 
             // Skip empty lines
@@ -149,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Extract only the first number and preserve units
                     const numericValue = value.match(/(\d+)(?:-\d+)?\s*(mg|g|mcg|kcal)?/i);
-                    const finalValue = numericValue ? `${numericValue[1]} ${numericValue[2] || ''}`.trim() : value; // Use the first number and unit or the original value
+                    const finalValue = numericValue ? `${numericValue[1]}${numericValue[2] || ''}`.trim() : value; // No space between number and unit
 
                     // Add each nutrient and value to the table
                     tableHTML += `

@@ -96,6 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function captureAndAnalyzeImage() {
         console.log('Starting image capture and analysis');
         
+        // Show the processing message immediately
+        resultDiv.innerHTML = '<h2>Please wait, processing... (takes about 18 seconds)</h2>';
+        resultDiv.style.display = 'block'; // Ensure the resultDiv is visible
+
         const canvas = document.createElement('canvas');
         const MAX_WIDTH = 180;
         const MAX_HEIGHT = 180;
@@ -119,28 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.height = height;
         canvas.getContext('2d').drawImage(video, 0, 0, width, height);
 
-        // Set capturedImageData before using it
-        capturedImageData = canvas.toDataURL();
-
-        // Create or update the result div
-        let newResultDiv = document.getElementById("result");
-        if (!newResultDiv) {
-            newResultDiv = document.createElement('div');
-            newResultDiv.id = "result";
-            newResultDiv.classList.add("result-container");
-            document.body.appendChild(newResultDiv); // Append to body or a specific container
-        }
-
-        // Show the processing message and captured image
-        newResultDiv.innerHTML = `
-            <h2>Please wait, processing... (takes about 18 seconds)</h2>
-            <img src="${capturedImageData}" alt="Captured Image" class="captured-image">
-        `;
-        newResultDiv.style.display = 'block'; // Ensure the result div is visible
-
         canvas.toBlob(async (blob) => {
             const formData = new FormData();
             formData.append('image', blob, 'captured_image.png');
+
+            capturedImageData = canvas.toDataURL();
 
             try {
                 console.log('Sending image to backend for analysis');
@@ -160,19 +147,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 const content = analysisResult.choices[0]?.message?.content || 'No valid content received.';
                 console.log("Content to display:", content);
 
+                // Create or update the result div
+                let newResultDiv = document.getElementById("result");
+                if (!newResultDiv) {
+                    newResultDiv = document.createElement('div');
+                    newResultDiv.id = "result";
+                    newResultDiv.classList.add("result-container");
+                    document.body.appendChild(newResultDiv); // Append to body or a specific container
+                }
+
                 // Parse the content to generate the table
                 const [tableHTML, additionalContent] = parseNutritionalInformation(content);
 
                 // Set the content using innerHTML, with a table and additional narrative if present
                 newResultDiv.innerHTML = `
                     <h2>Nutritional Analysis</h2>
-                    <img src="${capturedImageData}" alt="Captured Image" class="captured-image">
                     <div id="table-container">
                         ${tableHTML}
                     </div>
                     <p>${additionalContent}</p>
                 `;
                 console.log("Content set in resultDiv");
+
+                // Ensure the result div is visible
+                newResultDiv.style.display = 'block';
 
                 // Save current analysis to a variable for saving
                 currentAnalysis = {
@@ -186,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveButton.style.display = 'inline-block';
             } catch (error) {
                 console.error('Error during fetch or processing:', error);
-                newResultDiv.innerHTML = '<p>An error occurred while processing your request. Please try again.</p>';
+                resultDiv.innerHTML = '<p>An error occurred while processing your request. Please try again.</p>';
             }
         }, 'image/png', 0.5);
     }
@@ -201,17 +199,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const [tableHTML, additionalContent] = parseNutritionalInformation(content);
 
                 // Set the content using innerHTML, with a table and additional narrative if present
-                resultDiv.innerHTML = `
-                    <h2>Nutritional Analysis</h2>
-                    <img src="${capturedImageData}" alt="Captured Image" class="captured-image">
-                    <div id="table-container">
-                        ${tableHTML}
-                    </div>
-                    <p>${additionalContent}</p>
-                `;
-                console.log("Content set in resultDiv");
+                resultDiv.style.display = 'block';
+                tableContainer.style.display = 'block';
+                narrativeContainer.style.display = 'block';
 
-                // Save current analysis to a variable for saving
+                tableContainer.innerHTML = tableHTML;
+                narrativeContainer.innerHTML = `<p>${additionalContent}</p>`;
+
+                console.log("Content set in tableContainer and narrativeContainer");
+
+                // Updating current analysis with parsed data
                 currentAnalysis = {
                     imageData: capturedImageData,
                     tableHTML,
