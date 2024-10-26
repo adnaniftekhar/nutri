@@ -114,13 +114,32 @@
                     // Add event listeners for delete buttons
                     document.querySelectorAll(".delete-entry-button").forEach(button => {
                         button.addEventListener("click", (event) => {
-                            const index = button.getAttribute("data-index");
-                            // Remove the entry from local storage
-                            entries = entries.filter((_, i) => i !== parseInt(index));
-                            localStorage.setItem("nutritionalEntries", JSON.stringify(entries));
+                            const entryDiv = button.closest(".entry-summary");
+                            const entryTitle = entryDiv.querySelector(".entry-title").textContent;
 
-                            // Refresh the displayed entries
-                            displayEntries(); // Call the function to refresh entries
+                            if (confirm(`Are you sure you want to delete the entry: ${entryTitle}?`)) {
+                                const dayEntriesDiv = entryDiv.closest(".day-entries");
+                                const index = Array.from(dayEntriesDiv.children).indexOf(entryDiv);
+                                const date = entryDiv.closest(".day-summary").querySelector(".day-date").textContent;
+
+                                // Remove the entry from local storage
+                                let allEntries = JSON.parse(localStorage.getItem("nutritionalEntries")) || [];
+                                const updatedEntries = allEntries.filter(entry => {
+                                    const entryDate = new Date(entry.dateTime).toLocaleDateString();
+                                    return entryDate !== date || allEntries.indexOf(entry) !== index;
+                                });
+                                localStorage.setItem("nutritionalEntries", JSON.stringify(updatedEntries));
+
+                                // Remove the entry from the UI
+                                entryDiv.remove();
+
+                                // Check if the day has any remaining entries
+                                if (dayEntriesDiv.children.length === 0) {
+                                    // If no entries remain, remove the entire day div
+                                    const daySummaryDiv = dayEntriesDiv.closest(".day-summary");
+                                    daySummaryDiv.remove();
+                                }
+                            }
                         });
                     });
 
