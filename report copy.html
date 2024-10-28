@@ -38,10 +38,7 @@
 
     <div class="generate-recommendations-container">
         <button id="generate-recommendations-button">Generate Recommendations</button>
-        <div id="generating-message" style="display: none;">Generating recs...</div>
     </div>
-
-    <div id="recommendations-container"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -67,14 +64,8 @@
 
             // Add Generate Recommendations button
             const generateRecommendationsButton = document.getElementById('generate-recommendations-button');
-            const generatingMessage = document.getElementById('generating-message');
-            const recommendationsContainer = document.getElementById('recommendations-container');
-
             if (generateRecommendationsButton) {
                 generateRecommendationsButton.addEventListener('click', () => {
-                    generatingMessage.style.display = 'block';
-                    window.scrollBy(0, generatingMessage.getBoundingClientRect().bottom);
-
                     fetch('https://nutribackend-35880e8a6669.herokuapp.com/generate_recommendations', {
                         method: 'POST',
                         headers: {
@@ -84,18 +75,17 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        generatingMessage.style.display = 'none';
-
                         // Replace ** with <strong> tags for proper HTML formatting
                         const formattedRecommendations = data.recommendations
                             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-                        recommendationsContainer.innerHTML = `<h2>Recommendations</h2><p>${formattedRecommendations}</p>`;
-                        window.scrollBy(0, recommendationsContainer.getBoundingClientRect().bottom);
+                        const recommendationsDiv = document.createElement('div');
+                        recommendationsDiv.classList.add('recommendations');
+                        recommendationsDiv.innerHTML = `<h2>Recommendations</h2><p>${formattedRecommendations}</p>`;
+                        document.body.appendChild(recommendationsDiv);
                     })
                     .catch(error => {
                         console.error('Error generating recommendations:', error);
-                        generatingMessage.style.display = 'none';
                     });
                 });
             }
