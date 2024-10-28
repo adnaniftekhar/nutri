@@ -9,8 +9,9 @@
     .icon-container {
       display: flex;
       justify-content: center;
-      align-items: center;
-      height: calc(100vh - 60px);
+      align-items: flex-start;
+      height: auto;
+      margin-top: 20px;
     }
     .icon {
       width: 200px;
@@ -21,13 +22,17 @@
     .icon-wrapper {
       display: flex;
       flex-direction: column;
-      align-items: center; /* Center the text under the icon */
+      align-items: center;
     }
     .icon-wrapper p {
-      font-size: 24px; /* Increase font size */
-      color: green; /* Change text color to green */
-      text-align: center; /* Center the text */
-      margin-top: 10px; /* Add some space between the icon and text */
+      font-size: 24px;
+      color: green;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .welcome-text {
+      text-align: center;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -36,7 +41,7 @@
     <div class="header-content">
       <div id="hamburger" class="hamburger">&#9776;</div>
       <img src="nutri_icon.png" alt="Nutri Icon" id="icon">
-      <h1 style="margin-left: 5px;">nutri</h1> <!-- Added margin-left for spacing -->
+      <h1 style="margin-left: 5px;">nutri</h1>
     </div>
     <nav>
       <ul id="menu" class="hidden">
@@ -49,14 +54,19 @@
     </nav>
   </header>
   <main>
+    <div class="welcome-text">
+      <h2>Welcome to nutri. Food analysis, made simple.</h2>
+      <p>Click on the Text Input area to analyze your food by typing it in or on the Camera Input to take a photo and have the AI analyze it for you.</p>
+      <p><strong>Currently the Text Input feature is a lot more accurate!</strong></p>
+    </div>
     <div class="icon-container">
       <div class="icon-wrapper">
         <img src="text.png" alt="Text Icon" class="icon" onclick="location.href='text.html'">
-        <p><a href="text.html" style="color: green;">[TEXT INPUT]</a></p> <!-- Added link, kept text green -->
+        <p><a href="text.html" style="color: green;">[TEXT INPUT]</a></p>
       </div>
       <div class="icon-wrapper">
         <img src="camera.png" alt="Camera Icon" class="icon" onclick="location.href='camera.html'">
-        <p><a href="camera.html" style="color: green;">[CAMERA INPUT]</a></p> <!-- Added link, kept text green -->
+        <p><a href="camera.html" style="color: green;">[CAMERA INPUT]</a></p>
       </div>
     </div>
   </main>
