@@ -86,9 +86,13 @@
                     .then(data => {
                         generatingMessage.style.display = 'none';
 
+                        // Check if recommendations exists and is a string
+                        const recommendations = data.recommendations || "No recommendations available.";
+                        
                         // Replace ** with <strong> tags for proper HTML formatting
-                        const formattedRecommendations = data.recommendations
-                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        const formattedRecommendations = typeof recommendations === 'string' 
+                            ? recommendations.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            : "Error: Invalid recommendations format";
 
                         recommendationsContainer.innerHTML = `<h2>Recommendations</h2><p>${formattedRecommendations}</p>`;
                         window.scrollBy(0, recommendationsContainer.getBoundingClientRect().bottom);
@@ -96,6 +100,7 @@
                     .catch(error => {
                         console.error('Error generating recommendations:', error);
                         generatingMessage.style.display = 'none';
+                        recommendationsContainer.innerHTML = '<h2>Error</h2><p>Failed to generate recommendations. Please try again.</p>';
                     });
                 });
             }
