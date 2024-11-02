@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const foodItem = foodInput.value;
             console.log("Food item:", foodItem);
 
+            // Call your backend endpoint instead of NVIDIA's API directly
             const response = await fetch("https://nutribackend-35880e8a6669.herokuapp.com/analyze-text", {
                 method: "POST",
                 headers: {
@@ -63,7 +64,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const analysisResult = await response.json();
             console.log("Analysis result:", analysisResult);
 
-            const content = analysisResult.choices[0]?.message?.content || 'No valid content received.';
+            // Format the response to match the expected structure
+            const formattedResult = {
+                choices: [{
+                    message: {
+                        content: analysisResult.choices[0].message.content
+                    }
+                }]
+            };
+
+            const content = formattedResult.choices[0]?.message?.content || 'No valid content received.';
             console.log("Content to display:", content);
 
             // Parse the content to generate the table
@@ -128,54 +138,40 @@ document.addEventListener('DOMContentLoaded', () => {
         // Split the content into lines
         const lines = messageContent.split('\n');
         lines.forEach(line => {
-            // Remove any unwanted characters
+            // Remove any unwanted characters and trim whitespace
             line = line.replace(/[\*\+]/g, '').trim();
-
-            // Skip empty lines
-            if (line === '') return;
-
-            // Split by either ":" or "|", trimming whitespace from both ends
-            let delimiter = '';
-            if (line.includes('|')) {
-                delimiter = '|';
-            } else if (line.includes(':')) {
-                delimiter = ':';
-            }
-
-            if (delimiter) {
-                const parts = line.split(delimiter).map(part => part.trim());
-
-                if (parts.length >= 2) {
-                    const [name, value] = parts;
-
-                    // Extract only the first number and preserve units
-                    const numericValue = value.match(/(\d+)(?:-\d+)?\s*(mg|g|mcg|kcal)?/i);
-                    const finalValue = numericValue ? `${numericValue[1]}${numericValue[2] || ''}`.trim() : value; // No space between number and unit
-
-                    // Add each nutrient and value to the table
-                    tableHTML += `
-                        <tr>
-                            <td>${name}</td>
-                            <td>${finalValue}</td>
-                        </tr>`;
-                } else {
-                    // Accumulate non-table content into the additional content string
+            
+            // Skip empty lines and header/footer lines
+            if (line === '' || line.includes('**') || line.startsWith('---')) return;
+            
+            // Skip lines that don't contain nutrient information
+            if (!line.includes('|')) {
+                if (!line.toLowerCase().includes('confidence')) {
                     additionalContent += line.trim() + ' ';
                 }
-            } else {
-                // If no delimiter is found, add the line to additional content
-                additionalContent += line.trim() + ' ';
+                return;
+            }
+
+            // Split the line by the pipe character and clean up
+            const parts = line.split('|').map(part => part.trim()).filter(part => part);
+            
+            if (parts.length >= 2) {
+                const [name, value] = parts;
+                
+                // Skip header rows or empty values
+                if (name.toLowerCase() === 'nutrient' || value.toLowerCase() === 'value') return;
+                
+                // Add each nutrient and value to the table
+                tableHTML += `
+                    <tr>
+                        <td>${name}</td>
+                        <td>${value}</td>
+                    </tr>`;
             }
         });
 
         tableHTML += '</tbody></table>';
 
-        console.log('Parsed tableHTML:', tableHTML);
-        console.log('Parsed additionalContent:', additionalContent.trim());
-
-        return [
-            tableHTML,
-            additionalContent.trim()
-        ];
+        return [tableHTML, additionalContent.trim()];
     }
 });
